@@ -488,9 +488,10 @@ html[data-layout="stack"] .anchor { display: none; }
   background: radial-gradient(340px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--c, var(--gold)) 14%, transparent), transparent 62%); }
 .proj:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--c, var(--gold)) 45%, transparent); box-shadow: 0 30px 70px -40px rgba(0, 0, 0, .9); }
 .proj:hover::after { opacity: 1; }
-.proj-logo { display: grid; place-items: center; width: 100%; height: clamp(92px, 11vw, 128px); border-radius: 11px; border: 1px solid var(--line);
+.proj-logo { position: relative; display: grid; place-items: center; width: 100%; height: clamp(92px, 11vw, 128px); border-radius: 11px; border: 1px solid var(--line);
   background: radial-gradient(70% 80% at 30% 20%, color-mix(in srgb, var(--c, var(--gold)) 13%, transparent), transparent 62%), var(--bg-2); }
-.proj-logo img { max-width: 68%; max-height: 62%; width: auto; height: auto; object-fit: contain; }
+/* taken out of flow so its size resolves against the tile, then held inside it by its own padding */
+.proj-logo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: 16px 24px; }
 .proj-logo b { font-size: clamp(26px, 2.6vw, 34px); font-weight: 400; letter-spacing: .04em; color: var(--c, var(--gold)); }
 .proj h3 { font-size: clamp(19px, 1.5vw, 23px); }
 .proj-note { font-size: 14px; line-height: 1.55; color: var(--ink-3); }
@@ -509,3 +510,32 @@ html[data-layout="stack"] .anchor { display: none; }
 .section.contact { padding-top: clamp(64px, 7vw, 104px); padding-bottom: clamp(56px, 6vw, 88px); }
 .section.contact .section-head { gap: 16px; margin-bottom: clamp(30px, 3.4vw, 48px); }
 .section.contact .section-head h2 { font-size: clamp(28px, 3vw, 46px); }
+/* each client's logo is a different shape, so each is given the room it needs on the tile */
+.proj-logo img.is-padel { padding: 10px; }
+.proj-logo img.is-ruffieux { padding: 26px 30px; }
+.proj-logo img.is-joydayz { padding: 20px; }
+
+/* ---------------------------------------------------------------- WhatsApp */
+.wa { position: fixed; right: max(20px, env(safe-area-inset-right, 0px)); bottom: max(20px, env(safe-area-inset-bottom, 0px)); z-index: 55;
+  display: inline-flex; align-items: center; gap: 0; height: 56px; padding: 0 16px; border-radius: 999px; overflow: hidden;
+  background: linear-gradient(160deg, #2BE071, #16A94C); color: #042B14;
+  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, .7), 0 0 0 1px rgba(255, 255, 255, .14) inset;
+  opacity: 0; transform: translateY(14px) scale(.85); pointer-events: none;
+  transition: opacity .45s ease, transform .55s cubic-bezier(.2, .8, .2, 1), gap .45s cubic-bezier(.2, .8, .2, 1), padding .45s cubic-bezier(.2, .8, .2, 1); }
+.wa.is-on { opacity: 1; transform: none; pointer-events: auto; }
+.wa svg { width: 26px; height: 26px; fill: currentColor; flex: none; }
+.wa-label { max-width: 0; white-space: nowrap; font-size: 15px; font-weight: 500; opacity: 0; transition: max-width .45s cubic-bezier(.2, .8, .2, 1), opacity .3s; }
+.wa:hover, .wa:focus-visible { gap: 10px; padding-right: 22px; }
+.wa:hover .wa-label, .wa:focus-visible .wa-label { max-width: 190px; opacity: 1; }
+/* one slow ring, so the button reads as live without nagging */
+.wa-ring { position: absolute; inset: 0; border-radius: inherit; border: 2px solid #2BE071; opacity: 0; }
+.wa.is-on .wa-ring { animation: wa-ring 3.4s cubic-bezier(.2, .8, .2, 1) infinite; }
+@keyframes wa-ring { 0% { opacity: .55; transform: scale(1); } 70%, 100% { opacity: 0; transform: scale(1.5); } }
+/* room for it beside the link that sits in the same corner */
+.footer-bottom { padding-right: 76px; }
+@media (max-width: 560px) {
+  .wa { height: 50px; padding: 0 13px; }
+  .wa svg { width: 23px; height: 23px; }
+  .footer-bottom { padding-right: 64px; }
+}
+@media (prefers-reduced-motion: reduce) { .wa.is-on .wa-ring { animation: none; } }

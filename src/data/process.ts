@@ -80,9 +80,21 @@ export interface Project {
   logo?: string;
 }
 
-/** Live client sites. Logos go in src/assets/work and are wired up in Sections.tsx. */
+/** Live client sites. Logos live in src/assets/work and are attached in Sections.tsx. */
 export const PROJECTS: Project[] = [
-  { id: 'tpl', name: 'TPL Rachaya', mark: 'TPL', url: 'https://tplrachaya.com/', host: 'tplrachaya.com' },
-  { id: 'ruffieux', name: 'Étude Ruffieux', mark: 'ÉR', url: 'https://etude-ruffieux.ch/', host: 'etude-ruffieux.ch' },
-  { id: 'joydayz', name: 'Joydayz', mark: 'JD', url: 'https://joydayz-dev.kataflow.ch/', host: 'joydayz-dev.kataflow.ch' },
+  {
+    id: 'padel', name: 'The Padel Lounge', mark: 'TPL',
+    url: 'https://tplrachaya.com/', host: 'tplrachaya.com',
+    note: 'A panoramic padel court in Rachaya, with its lounge and coffee shop, and courts booked online by the hour.',
+  },
+  {
+    id: 'ruffieux', name: 'Etude Ruffieux', mark: 'ER',
+    url: 'https://etude-ruffieux.ch/', host: 'etude-ruffieux.ch',
+    note: 'A law firm in Bulle, Fribourg, presenting its work in property, construction, contract, family and criminal law.',
+  },
+  {
+    id: 'joydayz', name: 'JoyDayz', mark: 'JD',
+    url: 'https://joydayz-dev.kataflow.ch/', host: 'joydayz-dev.kataflow.ch',
+    note: 'A platform for finding local events, and for organisers to publish their own.',
+  },
 ];

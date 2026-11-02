@@ -51,7 +51,7 @@ Clicking a stage label scrolls the page to that stage's rest point, so scrolling
 
 ## Content status
 
-- Selected work lists live client sites from `PROJECTS`. Each shows a short mark until a logo file is added under `src/assets/work` and set as that project's `logo`; a one-line `note` is shown when filled in.
+- Selected work lists live client sites from `PROJECTS`, each with the client's own logo from `src/assets/work`. A project without a logo falls back to its short `mark`.
 - The "What we build" cards describe services. Their "Plan a …" links fill in the contact form's "What do you need?" field.
 - The contact form validates but does not send anything yet.
 

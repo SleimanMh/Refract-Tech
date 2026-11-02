@@ -1,5 +1,5 @@
 import { useLayoutEffect, useSyncExternalStore } from 'react';
-import { Band, Contact, Expertise, Footer, Header, Services, Work } from './components/Sections';
+import { Band, Contact, Expertise, Footer, Header, Services, WhatsAppButton, Work } from './components/Sections';
 import { ScrollProgress, usePointerFx } from './motion/fx';
 import { Sky } from './components/Sky';
 import { Story } from './components/Story';
@@ -27,6 +27,7 @@ export default function App() {
         <Contact />
       </main>
       <Footer />
+      <WhatsAppButton />
     </>
   );
 }

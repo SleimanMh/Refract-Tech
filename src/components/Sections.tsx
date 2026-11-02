@@ -1,6 +1,9 @@
 import { CSSProperties, FormEvent, useEffect, useRef, useState } from 'react';
 import { CAPABILITIES, PROJECTS, STAGES } from '../data/process';
 import logoHorizontal from '../assets/brand/logo-horizontal.png';
+import padelLogo from '../assets/work/the-padel-lounge.svg';
+import ruffieuxLogo from '../assets/work/etude-ruffieux.png';
+import joydayzLogo from '../assets/work/joydayz.svg';
 import logoStacked from '../assets/brand/logo-stacked.png';
 import wordmark from '../assets/brand/wordmark.png';
 import { Marquee, Split, useSectionMotion } from '../motion/fx';
@@ -13,6 +16,33 @@ const Arrow = () => <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 11
 export const Logo = ({ stacked = false }: { stacked?: boolean }) => (
   <img className={stacked ? 'brand-stacked' : 'brand-logo'} src={stacked ? logoStacked : logoHorizontal} alt="refract" />
 );
+
+// ---------------------------------------------------------------- chat
+const WhatsAppGlyph = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M12.04 2A9.9 9.9 0 0 0 2.1 11.9a9.8 9.8 0 0 0 1.35 4.96L2 22l5.3-1.38a9.9 9.9 0 0 0 4.74 1.2h.01a9.9 9.9 0 0 0 9.94-9.9A9.9 9.9 0 0 0 12.04 2Zm0 18.05h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.11.81.83-3.03-.2-.31a8.2 8.2 0 0 1-1.26-4.38 8.23 8.23 0 1 1 8.24 8.24Zm4.52-6.16c-.25-.13-1.47-.72-1.7-.8-.22-.09-.39-.13-.55.12s-.63.8-.77.96-.28.19-.53.06a6.73 6.73 0 0 1-3.37-2.95c-.25-.44.25-.4.72-1.35a.46.46 0 0 0-.02-.43c-.07-.13-.55-1.34-.76-1.83s-.4-.42-.55-.43h-.47a.9.9 0 0 0-.65.3 2.74 2.74 0 0 0-.86 2.04 4.77 4.77 0 0 0 1 2.53 10.9 10.9 0 0 0 4.17 3.69c1.55.67 2.16.72 2.94.61.47-.07 1.47-.6 1.68-1.19s.21-1.08.15-1.19-.23-.17-.48-.29Z" />
+  </svg>
+);
+
+/** A quiet chat button that comes in once the story is behind the visitor. */
+export function WhatsAppButton() {
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const story = document.querySelector('.story');
+    if (!story) { setOn(true); return; }
+    const io = new IntersectionObserver(([e]) => setOn(!e.isIntersecting), { threshold: 0 });
+    io.observe(story);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <a className={`wa${on ? ' is-on' : ''}`} href={WHATSAPP} target="_blank" rel="noreferrer noopener"
+      aria-label="Chat with Refract on WhatsApp" aria-hidden={!on} tabIndex={on ? 0 : -1}>
+      <span className="wa-ring" aria-hidden="true" />
+      <WhatsAppGlyph />
+      <span className="wa-label">Chat on WhatsApp</span>
+    </a>
+  );
+}
 
 // ---------------------------------------------------------------- header
 export function Header() {
@@ -56,7 +86,10 @@ export function Band() {
 }
 
 // ---------------------------------------------------------------- selected work
-/** Sites we have built and look after. Each card carries the client's own mark, name and address. */
+/** Each client's own logo, as served by their site. */
+const LOGOS: Record<string, string> = { padel: padelLogo, ruffieux: ruffieuxLogo, joydayz: joydayzLogo };
+
+/** Sites we have built and look after. Each card carries the client's own logo, name and address. */
 export function Work() {
   const ref = useRef<HTMLElement>(null);
   useSectionMotion(ref);
@@ -73,7 +106,7 @@ export function Work() {
           <li key={p.id} data-reveal style={{ '--c': palette.stages[i * 2] } as CSSProperties}>
             <a className="proj" href={p.url} target="_blank" rel="noreferrer noopener" data-glow>
               <span className="proj-logo" aria-hidden="true">
-                {p.logo ? <img src={p.logo} alt="" /> : <b>{p.mark}</b>}
+                {LOGOS[p.id] ? <img src={LOGOS[p.id]} alt="" className={`is-${p.id}`} /> : <b>{p.mark}</b>}
               </span>
               <h3>{p.name}</h3>
               {p.note && <p className="proj-note">{p.note}</p>}
@@ -186,6 +219,7 @@ export function Expertise() {
 // to that inbox, so it is safe to ship in the page.
 const WEB3FORMS_KEY = '1a1d6b2c-6057-4d87-b8c4-314f803d54d2';
 const EMAIL = 'refract@refract-tech.com';
+export const WHATSAPP = 'https://wa.me/96170090758?text=' + encodeURIComponent("Hello Refract, I'd like to talk about a project.");
 
 export function Contact() {
   const ref = useRef<HTMLElement>(null);
@@ -318,6 +352,7 @@ export function Footer() {
           <h3>Get in touch</h3>
           <ul>
             <li><a href={`mailto:${EMAIL}`}>{EMAIL}</a></li>
+            <li><a href={WHATSAPP} target="_blank" rel="noreferrer noopener">WhatsApp</a></li>
             <li><a href="#contact">Start a project</a></li>
             <li><button type="button" className="footer-link" onClick={() => privacyRef.current?.showModal()}>Privacy</button></li>
           </ul>
