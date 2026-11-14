@@ -23,7 +23,7 @@ The build uses a relative base, so `dist/` can be served from any folder or stat
 
 | Concern | Where |
 | --- | --- |
-| Process content, capabilities and client projects | `src/data/process.ts` |
+| Process content and capabilities | `src/data/process.ts` |
 | Story state model (one progress value → every visual) | `src/story/progress.ts` |
 | Scroll and navigation coordination | `src/story/controller.ts` |
 | Card artwork per stage | `src/deck/cardArt.ts` |
@@ -31,7 +31,7 @@ The build uses a relative base, so `dist/` can be served from any folder or stat
 | Night sky behind the page | `src/components/Sky.tsx` |
 | Brand palette | `src/theme.ts` |
 | Accessible HTML for the story | `src/components/Story.tsx` |
-| Header, work, services, expertise, contact, footer | `src/components/Sections.tsx` |
+| Header, what we build, expertise, contact, footer | `src/components/Sections.tsx` |
 
 ### The state model
 
@@ -48,7 +48,6 @@ Clicking a stage label scrolls the page to that stage's rest point, so scrolling
 
 ## Content status
 
-- Selected work lists live client sites from `PROJECTS`, each with the client's own logo from `src/assets/work`. A project without a logo falls back to its short `mark`.
 - The "What we build" cards describe services. Their "Plan a …" links fill in the contact form's "What do you need?" field.
 - The contact form sends enquiries through Web3Forms; WhatsApp is linked from a floating button and the footer.
 

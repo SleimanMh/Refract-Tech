@@ -1,9 +1,6 @@
 import { CSSProperties, FormEvent, useEffect, useRef, useState } from 'react';
-import { CAPABILITIES, PROJECTS, STAGES } from '../data/process';
+import { CAPABILITIES, STAGES } from '../data/process';
 import rMark from '../assets/brand/r-mark.png';
-import padelLogo from '../assets/work/the-padel-lounge.svg';
-import ruffieuxLogo from '../assets/work/etude-ruffieux.png';
-import joydayzLogo from '../assets/work/joydayz.svg';
 import { Marquee, Split, useSectionMotion } from '../motion/fx';
 import { palette } from '../theme';
 import { story } from '../story/controller';
@@ -89,40 +86,6 @@ export function Band() {
   );
 }
 
-// ---------------------------------------------------------------- selected work
-/** Each client's own logo, as served by their site. */
-const LOGOS: Record<string, string> = { padel: padelLogo, ruffieux: ruffieuxLogo, joydayz: joydayzLogo };
-
-/** Sites we have built and look after. Each card carries the client's own logo, name and address. */
-export function Work() {
-  const ref = useRef<HTMLElement>(null);
-  useSectionMotion(ref);
-  return (
-    <section className="section selected" id="work" aria-labelledby="selected-title" ref={ref}>
-      <Aurora tone="a" />
-      <header className="section-head">
-        <p className="eyebrow" data-reveal>Selected work</p>
-        <Split id="selected-title" text="Products already live." />
-        <p className="section-lede" data-reveal>Three sites we designed, built and still look after. Open any of them to see the work in use.</p>
-      </header>
-      <ul className="proj-grid">
-        {PROJECTS.map((p, i) => (
-          <li key={p.id} data-reveal style={{ '--c': palette.stages[i * 2] } as CSSProperties}>
-            <a className="proj" href={p.url} target="_blank" rel="noreferrer noopener" data-glow>
-              <span className="proj-logo" aria-hidden="true">
-                {LOGOS[p.id] ? <img src={LOGOS[p.id]} alt="" className={`is-${p.id}`} /> : <b>{p.mark}</b>}
-              </span>
-              <h3>{p.name}</h3>
-              {p.note && <p className="proj-note">{p.note}</p>}
-              <span className="proj-foot"><span className="proj-host">{p.host}</span><span className="proj-go">Visit site <Arrow /></span></span>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 // ---------------------------------------------------------------- what we build
 const WORK = [
   { kind: 't1', tag: 'Web', title: 'Web platforms', need: 'Web platform', cta: 'Plan a web platform' },
@@ -159,11 +122,11 @@ const Thumb = ({ kind }: { kind: string }) => (
     </svg>
   </div>
 );
-export function Services() {
+export function Work() {
   const ref = useRef<HTMLElement>(null);
   useSectionMotion(ref);
   return (
-    <section className="section work" id="services" aria-labelledby="work-title" ref={ref}>
+    <section className="section work" id="work" aria-labelledby="work-title" ref={ref}>
       <Aurora tone="a" />
       <header className="section-head">
         <p className="eyebrow" data-reveal>What we build</p>
@@ -338,7 +301,6 @@ export function Footer() {
           <h3>Explore</h3>
           <ul>
             <li><a href="#work">Work</a></li>
-            <li><a href="#services">Services</a></li>
             <li><a href="#process" onClick={e => { e.preventDefault(); story.goTo(0); }}>Process</a></li>
             <li><a href="#expertise">Expertise</a></li>
             <li><a href="#contact">Contact</a></li>

@@ -66,35 +66,3 @@ export const CAPABILITIES: Capability[] = [
   { id: 'devops', name: 'Deployment and DevOps', stage: 4 },
   { id: 'care', name: 'Monitoring and maintenance', stage: 5 },
 ];
-
-export interface Project {
-  id: string;
-  name: string;
-  /** the short mark shown until a logo file is in place */
-  mark: string;
-  url: string;
-  host: string;
-  /** one line on what the site is; shown when it is filled in */
-  note?: string;
-  /** a logo in src/assets/work, imported by the work section when present */
-  logo?: string;
-}
-
-/** Live client sites. Logos live in src/assets/work and are attached in Sections.tsx. */
-export const PROJECTS: Project[] = [
-  {
-    id: 'padel', name: 'The Padel Lounge', mark: 'TPL',
-    url: 'https://tplrachaya.com/', host: 'tplrachaya.com',
-    note: 'A panoramic padel court in Rachaya, with its lounge and coffee shop, and courts booked online by the hour.',
-  },
-  {
-    id: 'ruffieux', name: 'Etude Ruffieux', mark: 'ER',
-    url: 'https://etude-ruffieux.ch/', host: 'etude-ruffieux.ch',
-    note: 'A law firm in Bulle, Fribourg, presenting its work in property, construction, contract, family and criminal law.',
-  },
-  {
-    id: 'joydayz', name: 'JoyDayz', mark: 'JD',
-    url: 'https://joydayz-dev.kataflow.ch/', host: 'joydayz-dev.kataflow.ch',
-    note: 'A platform for finding local events, and for organisers to publish their own.',
-  },
-];
