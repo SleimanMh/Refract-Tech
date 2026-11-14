@@ -1,26 +1,26 @@
-/* Refract · Aurora
-   Midnight blue, starlight type, teal glass, and the colours of the northern lights. Single dark theme by design.
-   The colours below match src/theme.ts, which the 3D scene and panel art read too. */
-@property --stage { syntax: '<color>'; inherits: true; initial-value: #6FB7FF; }
+/* Refract Tech
+   Midnight navy, cloud-white type, and the logo's run from electric violet through soft purple to coral.
+   Single dark theme by design. The colours below match src/theme.ts, which the card art reads too. */
+@property --stage { syntax: '<color>'; inherits: true; initial-value: #8B5CF0; }
 :root {
   color-scheme: dark;
-  --bg: #090C18;
-  --bg-2: #111631;
-  --ink: #EDF0FA;          /* starlight */
-  --ink-2: #C3C8DE;
-  --ink-3: #8D94B5;        /* supporting text */
-  --ink-4: #5A6080;        /* hints */
+  --bg: #11112B;          /* midnight navy */
+  --bg-2: #1B1A40;
+  --ink: #F7F5FF;          /* cloud white */
+  --ink-2: #CFCAE8;
+  --ink-3: #9A94BF;        /* supporting text */
+  --ink-4: #635E8C;        /* hints */
   --line: color-mix(in srgb, var(--ink) 12%, transparent);
   --line-2: color-mix(in srgb, var(--ink) 24%, transparent);
-  --gold: #36E2C8;         /* aurora teal: buttons, rules, the main accent */
-  --gold-2: #2AA898;
-  --lav: #9B7CFF;          /* violet */
-  --aqua: #6FB7FF;
-  --coral: #FF8AD8;
+  --gold: #B66CFA;         /* soft purple: buttons, rules, the main accent */
+  --gold-2: #713DE8;
+  --lav: #713DE8;          /* electric violet */
+  --aqua: #B66CFA;
+  --coral: #FF906B;        /* coral orange */
   /* one colour per process stage, Discover … Evolve */
-  --c1: #6FB7FF; --c2: #36E2C8; --c3: #7BE8B0; --c4: #9B7CFF; --c5: #FF8AD8; --c6: #FFB38A;
+  --c1: #8B5CF0; --c2: #9D66F4; --c3: #B66CFA; --c4: #D17AD6; --c5: #EB86A0; --c6: #FF906B;
   --stage: var(--c1);      /* the current stage's colour, set by the story */
-  --spectrum: linear-gradient(90deg, var(--gold), var(--coral) 30%, var(--lav) 62%, var(--aqua));
+  --spectrum: linear-gradient(90deg, var(--lav), var(--gold) 50%, var(--coral));
   --f: "Albert Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --gut-l: max(clamp(20px, 4.4vw, 72px), env(safe-area-inset-left, 0px));
   --gut-r: max(clamp(20px, 4.4vw, 72px), env(safe-area-inset-right, 0px));
@@ -67,8 +67,15 @@ h1, h2, h3 { font-weight: 300; text-wrap: balance; letter-spacing: -.02em; }
 }
 .site-header.is-solid { background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-color: var(--line); }
 .brand { display: inline-flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 300; letter-spacing: -.01em; justify-self: start; }
-.brand-logo { display: block; height: 30px; width: auto; }
-.brand-stacked { display: block; height: 48px; width: auto; }
+.lockup { display: inline-flex; align-items: center; gap: 11px; color: var(--ink); }
+.lockup-mark { display: block; height: 30px; width: auto; }
+.lockup-text { display: grid; gap: 3px; }
+.lockup-name { font-size: 21px; font-weight: 500; letter-spacing: -.02em; line-height: 1; white-space: nowrap; }
+.lockup-name b { font-weight: 500; color: var(--coral); }
+.lockup-tag { font-size: 10px; font-weight: 400; letter-spacing: .32em; text-transform: uppercase; color: var(--ink-3); }
+.lockup.is-stacked { flex-direction: column; align-items: flex-start; gap: 12px; }
+.lockup.is-stacked .lockup-mark { height: 40px; }
+.lockup.is-stacked .lockup-name { font-size: 20px; }
 .site-nav { display: flex; gap: clamp(20px, 3vw, 48px); font-size: 16px; }
 .site-nav a, .header-cta { color: var(--ink); opacity: .86; transition: opacity .2s; padding-block: 10px; }
 .site-nav a:hover, .header-cta:hover { opacity: 1; }
@@ -77,17 +84,28 @@ h1, h2, h3 { font-weight: 300; text-wrap: balance; letter-spacing: -.02em; }
 
 /* ---------------------------------------------------------------- story (wide, pinned) */
 .story { position: relative; height: calc(100vh + var(--story-range)); height: calc(100svh + var(--story-range)); }
-.story-sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden;
-  background: radial-gradient(60% 70% at 62% 55%, var(--bg-2) 0%, transparent 70%), radial-gradient(80% 60% at 50% 110%, var(--bg-2) 0%, transparent 70%), var(--bg); }
-.canvas-wrap { position: absolute; inset: 0; }
-.canvas-wrap canvas { display: block; }
-.poster { position: absolute; width: min(46vw, 640px); top: 50%; left: calc(50% + (var(--open, 0) * -26vw) + 16vw); transform: translate(-50%, -50%); opacity: .95; pointer-events: none; }
-/* the sculpture fades up once its first frame is drawn, so it never pops in */
-.scene-fade { position: absolute; inset: 0; opacity: 0; transition: opacity .7s ease; }
-.scene-fade.is-ready { opacity: 1; }
-.leader { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; overflow: visible; }
-.leader line { stroke: var(--stage); stroke-width: 1; stroke-opacity: .75; }
-.leader circle { fill: var(--stage); }
+.story-sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+/* ---------------------------------------------------------------- the deck of cards */
+.deck-wrap { position: absolute; inset: 0; }
+.deck-stage { position: absolute; inset: 0; perspective: 1500px; overflow: hidden; opacity: 0; transition: opacity .7s ease; pointer-events: none; }
+.deck-stage.is-ready { opacity: 1; }
+.deck-anchor { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; }
+.deck-tilt { position: absolute; left: 0; top: 0; transform-style: preserve-3d; transition: transform .9s cubic-bezier(.2, .8, .2, 1); }
+/* a soft pool of the stage's colour behind the deck */
+.deck-glow { position: absolute; left: calc(var(--cw, 300px) * -1.25); top: calc(var(--ch, 450px) * -.85); width: calc(var(--cw, 300px) * 2.5); height: calc(var(--ch, 450px) * 1.7);
+  border-radius: 50%; transform: translateZ(-400px); opacity: .5;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--stage) 55%, transparent), color-mix(in srgb, var(--lav) 18%, transparent) 55%, transparent); }
+.dcard { position: absolute; left: calc(var(--cw, 300px) * -.5); top: calc(var(--ch, 450px) * -.5); width: var(--cw, 300px); height: var(--ch, 450px);
+  transform-style: preserve-3d; will-change: transform, opacity; backface-visibility: hidden; }
+.dcard-float { position: absolute; inset: 0; border-radius: calc(var(--cw, 300px) * .058); animation: float 7s ease-in-out infinite;
+  box-shadow: 0 40px 80px -30px rgba(4, 3, 20, .85), 0 0 0 1px color-mix(in srgb, var(--ink) 6%, transparent); }
+.dcard canvas { display: block; width: 100%; height: 100%; }
+.dcard-shade { position: absolute; inset: 0; border-radius: inherit; background: var(--bg); opacity: 0; }
+.dcard-sheen-clip { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; }
+.dcard-sheen { position: absolute; top: -10%; bottom: -10%; left: 0; width: 70%; opacity: 0;
+  background: linear-gradient(105deg, transparent 20%, color-mix(in srgb, var(--ink) 22%, transparent) 46%, color-mix(in srgb, var(--coral) 18%, transparent) 54%, transparent 80%); }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+@media (prefers-reduced-motion: reduce) { .dcard-float { animation: none; } .deck-tilt { transition: none; } }
 
 .pane { position: absolute; z-index: 5; }
 .pane[inert] { pointer-events: none; }
@@ -137,9 +155,7 @@ h1, h2, h3 { font-weight: 300; text-wrap: balance; letter-spacing: -.02em; }
 html[data-layout="stack"] { --header: 64px; }
 html[data-layout="stack"] .story { height: auto; display: flex; flex-direction: column; padding-top: var(--header); }
 html[data-layout="stack"] .story-sticky { display: contents; }
-html[data-layout="stack"] .canvas-wrap { position: sticky; top: var(--header); order: -2; z-index: 3; height: 40vh; height: 40svh; min-height: 250px; background: radial-gradient(70% 80% at 50% 60%, var(--bg-2), var(--bg)); }
-html[data-layout="stack"] .poster { left: 50%; width: min(82vw, 420px); }
-html[data-layout="stack"] .leader { display: none; }
+html[data-layout="stack"] .deck-wrap { position: sticky; top: var(--header); order: -2; z-index: 3; height: 40vh; height: 40svh; min-height: 250px; background: radial-gradient(70% 80% at 50% 60%, var(--bg-2), var(--bg)); }
 html[data-layout="stack"] .stage-nav { position: sticky; top: calc(var(--header) + max(40svh, 250px)); order: -1; z-index: 3; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 10px var(--gut-r) 10px var(--gut-l); margin: 0; background: var(--bg); border-bottom: 1px solid var(--line); opacity: 1; transform: none; pointer-events: auto; left: auto; right: auto; bottom: auto; }
 html[data-layout="stack"] .stage-nav::-webkit-scrollbar { display: none; }
 html[data-layout="stack"] .stage-nav button { flex: none; border: 1px solid var(--line-2); border-radius: 999px; padding: 8px 16px; font-size: 15px; min-height: 40px; }
@@ -202,7 +218,8 @@ html[data-layout="stack"] .anchor { display: none; }
 }
 @media (max-width: 899px) {
   .site-header { grid-template-columns: 1fr auto; }
-  .brand-logo { height: 26px; }
+  .lockup-mark { height: 26px; }
+  .lockup-name { font-size: 19px; }
   .work-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 560px) {
@@ -377,9 +394,8 @@ html[data-layout="stack"] .anchor { display: none; }
 .footer-col a { position: relative; display: inline-flex; align-items: baseline; gap: 10px; color: var(--ink-2); transition: color .3s; padding-block: 2px; }
 .footer-col a:hover { color: var(--ink); }
 .footer-col a span { font-size: 11px; letter-spacing: .1em; color: var(--ink-4); }
-.footer-word { width: clamp(150px, 22vw, 320px); max-width: 100%; aspect-ratio: 1618 / 360; margin-bottom: clamp(14px, 1.8vw, 24px); opacity: .9;
-  -webkit-mask: var(--wm) left center / contain no-repeat; mask: var(--wm) left center / contain no-repeat;
-  background: linear-gradient(100deg, color-mix(in srgb, var(--ink) 10%, transparent) 20%, rgba(246, 221, 176, .55) 45%, color-mix(in srgb, var(--ink) 10%, transparent) 65%) 0 0 / 250% 100%; animation: shimmer 9s linear infinite; }
+.footer-word { margin: 0 0 clamp(14px, 1.8vw, 24px); font-size: clamp(34px, 5.4vw, 76px); font-weight: 500; letter-spacing: -.04em; line-height: 1; white-space: nowrap;
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 9s linear infinite; }
 .footer-bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; padding-top: 22px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-4); }
 .footer-up { display: inline-flex; align-items: center; gap: 10px; color: var(--ink-3); transition: color .3s; }
 .footer-up:hover { color: var(--ink); }
@@ -387,7 +403,7 @@ html[data-layout="stack"] .anchor { display: none; }
 @media (max-width: 899px) {
   .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .footer-brand { grid-column: 1 / -1; }
-  .footer-brand .brand-stacked { height: 42px; }
+  .footer-brand .lockup-mark { height: 36px; }
 }
 
 @media (max-width: 899px) {
@@ -403,9 +419,7 @@ html[data-layout="stack"] .anchor { display: none; }
    for screen readers). */
 @media (max-width: 899px) {
   html[data-layout="wide"] { --header: 64px; --story-range: 620vh; }
-  html[data-layout="wide"] .story-sticky { background: radial-gradient(90% 55% at 50% 36%, var(--bg-2) 0%, transparent 72%), var(--bg); }
-  html[data-layout="wide"] .leader, html[data-layout="wide"] .story-hints { display: none; }
-  html[data-layout="wide"] .poster { left: 50%; top: 38%; width: min(78vw, 400px); }
+  html[data-layout="wide"] .story-hints { display: none; }
 
   html[data-layout="wide"] .hero-copy, html[data-layout="wide"] .final-copy {
     left: var(--gut-l); right: var(--gut-r); width: auto; top: auto; bottom: calc(34px + env(safe-area-inset-bottom, 0px)); }
@@ -450,7 +464,8 @@ html[data-layout="stack"] .anchor { display: none; }
 .marquee .mq-item:nth-child(6n+3) svg { stroke: var(--c3); } .marquee .mq-item:nth-child(6n+4) svg { stroke: var(--c4); }
 .marquee .mq-item:nth-child(6n+5) svg { stroke: var(--c5); } .marquee .mq-item:nth-child(6n+6) svg { stroke: var(--c6); }
 .work-item:nth-child(1) .work-thumb svg { stroke: var(--c1); } .work-item:nth-child(2) .work-thumb svg { stroke: var(--c3); } .work-item:nth-child(3) .work-thumb svg { stroke: var(--c5); }
-.footer-word { background: linear-gradient(100deg, color-mix(in srgb, var(--ink) 10%, transparent) 15%, var(--coral) 35%, var(--lav) 48%, var(--aqua) 60%, color-mix(in srgb, var(--ink) 10%, transparent) 75%) 0 0 / 250% 100%; opacity: .75; }
+/* set as longhands: the background shorthand would reset the clip to the text */
+.footer-word { background-image: linear-gradient(100deg, color-mix(in srgb, var(--ink) 12%, transparent) 15%, var(--lav) 35%, var(--gold) 48%, var(--coral) 60%, color-mix(in srgb, var(--ink) 12%, transparent) 75%); background-size: 250% 100%; background-position: 0 0; -webkit-background-clip: text; background-clip: text; opacity: .8; }
 .stage-nav button small { color: var(--c, var(--ink-3)); }
 
 /* ---------------------------------------------------------------- the night sky (palettes that have one) */

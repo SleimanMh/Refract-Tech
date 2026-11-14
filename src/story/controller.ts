@@ -21,7 +21,7 @@ export interface Snapshot {
 }
 
 /**
- * Coordinates scroll, navigation and the scene. Scroll (or the stacked sections on small screens)
+ * Coordinates scroll, navigation and the card deck. Scroll (or the stacked sections on small screens)
  * sets a target progress; one damped value follows it, and every visual reads from that value.
  * Clicking a stage only scrolls the page, so there is never a second animation competing with scroll.
  */
@@ -32,13 +32,13 @@ class StoryController {
   hover = -1;
   pointer = { x: 0, y: 0 };
   snapshot: Snapshot;
-  invalidate: (() => void) | null = null;
+  /** Called whenever the state, the hovered stage or the pointer changes; the deck lays itself out from it. */
+  onFrame: ((s: StoryState) => void) | null = null;
   root: HTMLElement | null = null;
-  leader: { line: SVGLineElement; dot: SVGCircleElement } | null = null;
   stageEls: HTMLElement[] = [];
   heroEl: HTMLElement | null = null;
   finalEl: HTMLElement | null = null;
-  canvasWrapEl: HTMLElement | null = null;
+  deckEl: HTMLElement | null = null;
   navEl: HTMLElement | null = null;
 
   private running = false;
@@ -136,8 +136,8 @@ class StoryController {
     this.target = p;
   }
 
-  setHover(i: number) { this.hover = i; this.invalidate?.(); }
-  setPointer(x: number, y: number) { this.pointer.x = x; this.pointer.y = y; this.invalidate?.(); }
+  setHover(i: number) { this.hover = i; this.onFrame?.(this.state); }
+  setPointer(x: number, y: number) { this.pointer.x = x; this.pointer.y = y; this.onFrame?.(this.state); }
 
   /** Advance once per frame on the shared GSAP ticker. Does nothing once everything has settled. */
   private step = (_time: number, deltaMs: number) => {
@@ -153,7 +153,7 @@ class StoryController {
     }
     this.state = stateFromProgress(this.shown);
     this.apply();
-    this.invalidate?.();
+    this.onFrame?.(this.state);
   };
 
   private apply() {
@@ -189,9 +189,9 @@ class StoryController {
     } else {
       const el = i < 0 ? this.heroEl : i > 5 ? this.finalEl : this.stageEls[i];
       if (!el) return;
-      // the sculpture and stage chips stay pinned at the top; land the section just below them
+      // the deck and stage chips stay pinned at the top; land the section just below them
       const header = document.getElementById('siteHeader')?.offsetHeight ?? 0;
-      const pinned = header + (this.canvasWrapEl?.offsetHeight ?? 0) + (this.navEl?.offsetHeight ?? 0);
+      const pinned = header + (this.deckEl?.offsetHeight ?? 0) + (this.navEl?.offsetHeight ?? 0);
       const y = el.getBoundingClientRect().top + window.scrollY - (i < 0 ? header : pinned) - 4;
       if (this.reduce) window.scrollTo(0, y);
       else gsap.to(window, { duration: .6, ease: 'power2.inOut', scrollTo: { y, autoKill: true }, overwrite: true });

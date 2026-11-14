@@ -1,14 +1,16 @@
 import { useEffect, useRef } from 'react';
 import { auroraHue, palette, rgb } from '../theme';
 
-// A night sky behind the page: a fixed field of stars that twinkles, and
+// A night sky behind the whole page, the story included: a fixed field of stars that twinkles, and
 // curtains of aurora that fold and drift across the top of the screen while their hues slowly shift.
-// The aurora is computed at low resolution and stretched, which keeps it soft and cheap; it pauses
-// while the story's own 3D sky fills the screen, and holds still for visitors who prefer reduced motion.
+// The aurora is computed at low resolution and stretched, which keeps it soft and cheap; phones get a
+// coarser, slower one, and it holds still for visitors who prefer reduced motion.
 
-const AW = 224, AH = 126;
+const small = typeof window !== 'undefined' && matchMedia('(max-width: 899px), (pointer: coarse)').matches;
+const AW = small ? 128 : 176, AH = small ? 72 : 99;
+const FRAME_MS = small ? 66 : 40;
 
-/** turn a colour around the grey axis (the same drift as the 3D sky) */
+/** turn a colour around the grey axis, so the hues drift without leaving the palette's family */
 function turn(c: [number, number, number], a: number): [number, number, number] {
   const k = .57735, ca = Math.cos(a), sa = Math.sin(a), d = k * (c[0] + c[1] + c[2]) * (1 - ca);
   const cx = k * (c[2] - c[1]), cy = k * (c[0] - c[2]), cz = k * (c[1] - c[0]);   // cross(k, c)
@@ -25,7 +27,7 @@ function drawStars(cv: HTMLCanvasElement, seed: number) {
   for (let i = 0; i < n; i++) {
     const x = rand() * w, y = Math.pow(rand(), 1.35) * h, s = .35 + Math.pow(rand(), 3) * 1.25;
     g.globalAlpha = .25 + rand() * .7 * (1 - y / h * .6);
-    g.fillStyle = rand() > .85 ? '#CFE0FF' : '#FFFFFF';
+    g.fillStyle = rand() > .85 ? '#E2D4FF' : '#FFFFFF';
     g.beginPath(); g.arc(x, y, s, 0, Math.PI * 2); g.fill();
   }
 }
@@ -77,11 +79,9 @@ function SkyLayers() {
       }
       g.putImageData(img, 0, 0);
     };
-    const storyEl = document.querySelector('.story');
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick);
-      if (now - last < 33 || document.hidden) return;                 // about thirty frames a second keeps the drift smooth
-      if (storyEl && storyEl.getBoundingClientRect().bottom > innerHeight) return;   // the story's own sky covers the screen
+      if (now - last < FRAME_MS || document.hidden) return;   // the drift is slow; a modest rate keeps it smooth
       last = now; paint(now / 1000);
     };
     paint(0);

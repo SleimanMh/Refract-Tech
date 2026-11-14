@@ -1,20 +1,24 @@
 import { CSSProperties, FormEvent, useEffect, useRef, useState } from 'react';
 import { CAPABILITIES, PROJECTS, STAGES } from '../data/process';
-import logoHorizontal from '../assets/brand/logo-horizontal.png';
+import rMark from '../assets/brand/r-mark.png';
 import padelLogo from '../assets/work/the-padel-lounge.svg';
 import ruffieuxLogo from '../assets/work/etude-ruffieux.png';
 import joydayzLogo from '../assets/work/joydayz.svg';
-import logoStacked from '../assets/brand/logo-stacked.png';
-import wordmark from '../assets/brand/wordmark.png';
 import { Marquee, Split, useSectionMotion } from '../motion/fx';
 import { palette } from '../theme';
 import { story } from '../story/controller';
 
 const Arrow = () => <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 
-/** The brand: mark and wordmark side by side for the header, stacked for the footer. */
+/** The brand: the R beside the name in the header, above it with the strapline in the footer. */
 export const Logo = ({ stacked = false }: { stacked?: boolean }) => (
-  <img className={stacked ? 'brand-stacked' : 'brand-logo'} src={stacked ? logoStacked : logoHorizontal} alt="refract" />
+  <span className={`lockup${stacked ? ' is-stacked' : ''}`}>
+    <img className="lockup-mark" src={rMark} alt="" />
+    <span className="lockup-text">
+      <span className="lockup-name">Refract <b>Tech</b></span>
+      {stacked && <span className="lockup-tag">Digital solutions</span>}
+    </span>
+  </span>
 );
 
 // ---------------------------------------------------------------- chat
@@ -58,7 +62,7 @@ export function Header() {
   }, []);
   return (
     <header className={`site-header${solid ? ' is-solid' : ''}`} id="siteHeader">
-      <a className="brand" href="#top" aria-label="Refract, back to top"><Logo /></a>
+      <a className="brand" href="#top" aria-label="Refract Tech, back to top"><Logo /></a>
       <nav className="site-nav" aria-label="Main">
         <a href="#work">Work</a>
         <a href="#process" onClick={e => { e.preventDefault(); story.goTo(0); }}>Process</a>
@@ -327,7 +331,7 @@ export function Footer() {
     <footer className="site-footer" ref={ref}>
       <div className="footer-grid">
         <div className="footer-brand" data-reveal>
-          <a href="#top" aria-label="Refract, back to top" onClick={toTop}><Logo stacked /></a>
+          <a href="#top" aria-label="Refract Tech, back to top" onClick={toTop}><Logo stacked /></a>
           <p>Strategy, design, engineering and care for digital products, from the first idea to every release after launch.</p>
         </div>
         <nav className="footer-col" aria-label="Footer" data-reveal>
@@ -359,11 +363,11 @@ export function Footer() {
         </div>
       </div>
 
-      {/* the wordmark, lit by a slow passing sheen */}
-      <div className="footer-word" aria-hidden="true" data-reveal style={{ '--wm': `url(${wordmark})` } as CSSProperties} />
+      {/* the name, large and quiet, lit by a slow passing sheen */}
+      <p className="footer-word" aria-hidden="true" data-reveal>Refract Tech</p>
 
       <div className="footer-bottom">
-        <p>© {new Date().getFullYear()} Refract. All rights reserved. <span className="footer-sep">·</span> <button type="button" className="footer-link" onClick={() => privacyRef.current?.showModal()}>Privacy</button></p>
+        <p>© {new Date().getFullYear()} Refract Tech. All rights reserved. <span className="footer-sep">·</span> <button type="button" className="footer-link" onClick={() => privacyRef.current?.showModal()}>Privacy</button></p>
         <a className="footer-up" href="#top" onClick={toTop}>Back to top <Arrow /></a>
       </div>
 

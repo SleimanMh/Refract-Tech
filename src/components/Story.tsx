@@ -1,7 +1,7 @@
 import { CSSProperties, KeyboardEvent, useEffect, useRef, useSyncExternalStore } from 'react';
 import { STAGES } from '../data/process';
 import { story } from '../story/controller';
-import { SceneHost } from './SceneHost';
+import { Deck } from './Deck';
 import { palette } from '../theme';
 
 const Arrow = ({ down = false }: { down?: boolean }) => down
@@ -14,16 +14,13 @@ export function Story() {
   const heroRef = useRef<HTMLDivElement>(null);
   const finalRef = useRef<HTMLDivElement>(null);
   const stageRefs = useRef<HTMLElement[]>([]);
-  const lineRef = useRef<SVGLineElement>(null);
-  const dotRef = useRef<SVGCircleElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const wide = snap.mode === 'wide';
 
   useEffect(() => {
     story.root = rootRef.current; story.heroEl = heroRef.current; story.finalEl = finalRef.current;
-    story.stageEls = stageRefs.current; story.canvasWrapEl = wrapRef.current; story.navEl = navRef.current;
-    story.leader = lineRef.current && dotRef.current ? { line: lineRef.current, dot: dotRef.current } : null;
+    story.stageEls = stageRefs.current; story.deckEl = wrapRef.current; story.navEl = navRef.current;
     story.bindScroll();
     // deep links such as #stage-design open the matching stage
     const fromHash = () => {
@@ -61,9 +58,8 @@ export function Story() {
       onPointerMove={e => { if (wide) story.setPointer((e.clientX / innerWidth - .5) * 2, (e.clientY / innerHeight - .5) * 2); }}
       onPointerLeave={() => story.setPointer(0, 0)}>
       <div className="story-sticky">
-        <div className="canvas-wrap" ref={wrapRef}>
-          <SceneHost />
-          <svg className="leader" aria-hidden="true"><line ref={lineRef} /><circle ref={dotRef} r="3" /></svg>
+        <div className="deck-wrap" ref={wrapRef}>
+          <Deck mode={snap.mode} />
         </div>
 
         <div className="pane hero-copy" ref={heroRef} {...paneProps(snap.heroOn)}>

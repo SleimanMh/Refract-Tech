@@ -1,6 +1,6 @@
-# Refract
+# Refract Tech
 
-Marketing site for Refract, built around the "Parallax" direction: one crystal pyramid that breaks into six glass blocks (the process), explains each one, then re-forms around the finished product.
+Marketing site for Refract Tech. Its story is a deck of cards: closed beside the hero, it fans open as the visitor scrolls, the six stages of the process come forward one at a time while the ones done turn away like pages, and the cards gather again under the finished product.
 
 ## Run it
 
@@ -16,7 +16,7 @@ The build uses a relative base, so `dist/` can be served from any folder or stat
 ## Stack
 
 - React 19 + TypeScript, built with Vite
-- three.js through React Three Fiber, one persistent canvas, rendered on demand
+- The deck is plain DOM: each card is a 2D canvas drawn once, moved with CSS 3D transforms (no WebGL)
 - GSAP (ScrollTrigger and ScrollTo) for scroll progress and click navigation
 
 ## How it is organised
@@ -26,12 +26,10 @@ The build uses a relative base, so `dist/` can be served from any folder or stat
 | Process content, capabilities and client projects | `src/data/process.ts` |
 | Story state model (one progress value → every visual) | `src/story/progress.ts` |
 | Scroll and navigation coordination | `src/story/controller.ts` |
-| Pyramid and block geometry | `src/three/geometry.ts` |
-| Glass material | `src/three/glass.ts` |
-| Beam, launch path and return ring | `src/three/ribbon.ts` |
-| Product-plane artwork per stage | `src/three/stageArt.ts` |
-| Camera and sculpture choreography | `src/three/choreography.ts` |
-| Scene assembly and per-frame updates | `src/three/Scene.tsx` |
+| Card artwork per stage | `src/deck/cardArt.ts` |
+| The deck and its choreography | `src/components/Deck.tsx` |
+| Night sky behind the page | `src/components/Sky.tsx` |
+| Brand palette | `src/theme.ts` |
 | Accessible HTML for the story | `src/components/Story.tsx` |
 | Header, work, services, expertise, contact, footer | `src/components/Sections.tsx` |
 
@@ -45,15 +43,14 @@ Clicking a stage label scrolls the page to that stage's rest point, so scrolling
 
 ### Layouts
 
-- **Wide (desktop):** sculpture left, process copy right, pinned story of about 5.4 viewport heights.
-- **Stacked (under 900px wide, and whenever reduced motion is on):** a smaller pinned sculpture and stage chips at the top, with each stage as an ordinary section below. With reduced motion the scene jumps between rest states instead of travelling.
-- **No WebGL:** an intentional static drawing of the six layers; all content and navigation still work.
+- **Wide (desktop):** the deck left, process copy right, pinned story of about 6.6 viewport heights. Phones use the same pinned story with the deck above the stage chips.
+- **Stacked (whenever reduced motion is on):** a smaller pinned deck and stage chips at the top, with each stage as an ordinary section below. The deck jumps between rest states instead of travelling.
 
 ## Content status
 
 - Selected work lists live client sites from `PROJECTS`, each with the client's own logo from `src/assets/work`. A project without a logo falls back to its short `mark`.
 - The "What we build" cards describe services. Their "Plan a …" links fill in the contact form's "What do you need?" field.
-- The contact form validates but does not send anything yet.
+- The contact form sends enquiries through Web3Forms; WhatsApp is linked from a floating button and the footer.
 
 ## Earlier design exploration
 
