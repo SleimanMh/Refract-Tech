@@ -541,6 +541,157 @@ function padelReel(hud, mark) {
   };
 }
 
+// ------------------------------------------------------------------ 60 Days Challenge × Refract Tech
+// A case study of the training app Refract Tech built for Eagle Strength's 60 Days Challenge:
+// the real app (run with a made-up demo squad), the one-tap check-in, its features, and a new,
+// calmer ending: the app's screens become a wall that recedes into the dark and the logo rises.
+const CH = { gold: '#F6B912', red: '#E3261C', ink: '#0B0B0C', cream: '#F2EFE7' };
+
+/** The new close: a wall of the app's screens recedes, the logo rises out of the light, the email arrives. */
+function Finale(parent, tiles, heading) {
+  const root = h('div', 'fin', parent);
+  const wall = h('div', 'fin-wall', root, tiles.map(([src, pos]) => `<div class="fin-tile" style="background-image:url(${src});background-position:${pos}"></div>`).join(''));
+  const cells = [...wall.children];
+  const light = h('div', 'fin-light', root);
+  const logo = Logo(root, 300);
+  const head = Lines(root, heading, { y: 800, size: 100 });
+  const pill = h('div', 'email', root, `<span class="email-sheen"></span><i>${ICON.mail}</i><span class="e-txt"></span>`);
+  const txt = pill.querySelector('.e-txt'), pSheen = pill.querySelector('.email-sheen');
+  const soon = h('div', 'soon', root, `<b></b>refract-tech.com · launching soon`);
+  const veil = h('div', 'fin-veil', root);
+  return {
+    update(t, tin, tout) {
+      const on = t > tin - .05; root.style.display = on ? '' : 'none'; if (!on) return;
+      // the wall: tiles land in a grid, tilt back and recede while a light opens behind them
+      const pull = tw(t, tin + .45, tin + 1.6, ease.inOutCubic);
+      look(wall, 1 - tw(t, tin + 1.1, tin + 1.6), `translate(540px,900px) translate(-50%,-50%) perspective(1800px) rotateX(${(10 + 26 * pull).toFixed(2)}deg) rotateZ(${(-6 * pull).toFixed(2)}deg) translateZ(${(-1600 * pull).toFixed(1)}px)`);
+      cells.forEach((c, i) => { const k = spring(t, tin + i * .06, 1.6, .7); look(c, clamp(k * 2), `translateY(${((1 - k) * 260).toFixed(1)}px) scale(${(.8 + .2 * clamp(k)).toFixed(3)})`); });
+      look(light, tw(t, tin + .5, tin + 1.3) * (1 - .45 * tw(t, tin + 1.8, tin + 2.6)), `translate(540px,560px) translate(-50%,-50%) scale(${(.4 + .8 * tw(t, tin + .5, tin + 1.6, ease.outCubic)).toFixed(3)})`);
+      // the logo rises out of that light, then everything settles and breathes
+      logo.update(t, tin + 1.05, 99, 540, 560 + 40 * (1 - tw(t, tin + 1.05, tin + 1.9, ease.outCubic)));
+      head.update(t, tin + 1.45, 99);
+      const p = ease.outExpo(prog(t, tin + 1.85, tin + 2.5));
+      look(pill, p, `translate(540px,1135px) translate(-50%,-50%) translateY(${((1 - p) * 30).toFixed(1)}px)`);
+      const n = Math.round(prog(t, tin + 1.95, tin + 2.55) * 24);
+      const full = 'refract@refract-tech.com'; if (txt.textContent.length !== n) txt.textContent = full.slice(0, n);
+      pSheen.style.transform = `translateX(${(-160 + prog(t, tin + 2.7, tin + 3.3) * 520).toFixed(1)}%)`;
+      const s = ease.outExpo(prog(t, tin + 2.4, tin + 2.9));
+      look(soon, s, `translate(540px,1268px) translate(-50%,-50%) translateY(${((1 - s) * 16).toFixed(1)}px)`);
+      // a slow fade to night at the very end, so the reel loops cleanly
+      look(veil, tw(t, tout - .45, tout, ease.inOutSine) * .85);
+    },
+  };
+}
+
+function challengeReel(hud, mark) {
+  const DUR = 24.5;
+  hud.style.setProperty('--acc', CH.gold);
+  const world = h('div', 'world', hud);
+  const intro = Hook(world, mark);
+
+  // ---- 1 · the collaboration
+  const caseLbl = h('div', 'ep-label', hud, 'Case study'); caseLbl.style.top = '470px';
+  const rl = Logo(hud, 250);
+  const eagle = h('div', 'eagle-mark', hud, `<img src="assets/challenge/eagle.png">`);
+  const cross = h('div', 'cross', hud, `<svg viewBox="0 0 100 100" width="90" height="90"><path id="cx1" d="M20 20L80 80" pathLength="1"/><path id="cx2" d="M80 20L20 80" pathLength="1"/></svg>`);
+  const x1 = cross.querySelector('#cx1'), x2 = cross.querySelector('#cx2');
+  const collab = Lines(hud, ['Refract Tech ×', '*60 Days Challenge*'], { y: 1050, size: 92 });
+  const sub = h('div', 'soon', hud, `<b></b>Web app design &amp; development`);
+
+  // ---- 2 · the question
+  const q = Lines(hud, ['Can a whole squad', '*stay on track for 60 days?*'], { y: 760 });
+
+  // ---- 3 · the app, in a phone
+  const meet = Lines(hud, ['Meet the', '*60 Days Challenge.*'], { y: 250, size: 84 });
+  const phone = h('div', 'pphone ch-phone', hud, `<div class="pscr"><img src="assets/challenge/full.png"></div><span class="pnotch"></span>`);
+  const page = phone.querySelector('img');
+  const embers = Array.from({ length: 14 }, (_, i) => h('div', 'ember', hud));
+
+  // ---- 4 · one tap, day done
+  const tapH = Lines(hud, ['One tap.', '*Day done.*'], { y: 250, size: 96 });
+  const mission = h('div', 'ch-mission', hud, `<img class="m0" src="assets/challenge/mission.png"><img class="m1" src="assets/challenge/mission-done.png"><span class="m-flash"></span>`);
+  const m1 = mission.querySelector('.m1'), mflash = mission.querySelector('.m-flash');
+  const sparks = Array.from({ length: 18 }, () => h('div', 'spark-g', hud));
+  const liveP = h('div', 'ch-live', hud, `<b></b>The whole squad sees it, live`);
+  const touch = Touch(hud);
+
+  // ---- 5 · features, one at a time
+  const featL = h('div', 'ep-label', hud, 'Built for the squad'); featL.style.top = '400px';
+  const FEAT = [
+    ['board.png', '0 -10px', ['Live squad', 'board'], "Everyone sees everyone's progress."],
+    ['phases.png', '0 -150px', ['A plan for', 'every day'], 'Runs, pushups and hikes, all 60 days.'],
+    ['coach.png', '0 -10px', ['Coach in', 'control'], 'Approves athletes, assigns their level.'],
+  ];
+  const feats = FEAT.map(([img, pos, title, line], i) => {
+    const el = h('div', 'pfeat ch-feat', hud, `<div class="pf-pic" style="background-image:url(assets/challenge/${img});background-position:${pos}"><span class="pf-n">0${i + 1} / 03</span></div>
+      <div class="pf-t">${title.map((t, j) => `<div class="o-row"><span${j ? ' class="gold"' : ''}>${t}</span></div>`).join('')}</div><div class="pf-l">${line}</div>`);
+    return { el, pic: el.querySelector('.pf-pic'), rows: [...el.querySelectorAll('.o-row span')], line: el.querySelector('.pf-l') };
+  });
+
+  // ---- 6 · built by Refract
+  const built = Lines(hud, ['Designed and built by', '*Refract Tech.*'], { y: 690 });
+  const live = h('div', 'site-pill', hud, `<span class="email-sheen"></span>60 Days Challenge<em class="live gold"><b></b>Live</em>`);
+  const liveSheen = live.querySelector('.email-sheen');
+
+  const end = Finale(hud, [['assets/challenge/top.png', '0 0'], ['assets/challenge/mission-done.png', '0 0'], ['assets/challenge/board.png', '0 0'],
+    ['assets/challenge/coach.png', '0 0'], ['assets/challenge/phases.png', '0 -150px'], ['assets/challenge/poster.jpg', 'center']], ['Have an idea worth building?', "*Let's talk.*"]);
+  const T = { collab: 2.6, q: 4.9, app: 7.0, tap: 10.0, feat: 13.7, built: 18.5, end: 20.4 };
+  const TAP = 10.95, FEAT_AT = [13.8, 15.35, 16.9];
+  return {
+    DUR, focus: t => intro.focus(t),
+    events: { lock: [intro.LOCK], collab: [3.25], tick: [T.q], whoosh: [6.95, 9.95, 18.45], drop: [TAP], item: FEAT_AT, finale: [T.end], rise: [T.end + 1.05] },
+    update(t) {
+      intro.update(t);
+      // the collaboration
+      const cIn = spring(t, 2.65, 1.3, .7), cOut = ease.inCubic(prog(t, 4.6, 4.9));
+      const lk = ease.outExpo(prog(t, 2.7, 3.2));
+      look(caseLbl, lk * (1 - cOut), `translateY(${((1 - lk) * 16).toFixed(1)}px)`);
+      rl.update(t, 2.65, 4.85, lerp(-200, 300, clamp(cIn)) - cOut * 300, 800);
+      look(eagle, clamp(cIn * 2) * (1 - cOut), `translate(${(lerp(1280, 780, clamp(cIn)) + cOut * 300).toFixed(1)}px,800px) translate(-50%,-50%) rotate(${((1 - clamp(cIn)) * 90).toFixed(1)}deg)`);
+      look(cross, prog(t, 3.1, 3.2) * (1 - cOut), `translate(540px,800px) translate(-50%,-50%) scale(${(1 + .25 * bump(t, 3.2, 3.6)).toFixed(3)})`);
+      x1.style.strokeDashoffset = (1 - tw(t, 3.1, 3.3)).toFixed(3); x2.style.strokeDashoffset = (1 - tw(t, 3.2, 3.4)).toFixed(3);
+      collab.update(t, 3.3, 4.8);
+      const sk = ease.outExpo(prog(t, 3.7, 4.2));
+      look(sub, sk * (1 - cOut), `translate(540px,1300px) translate(-50%,-50%) translateY(${((1 - sk) * 20).toFixed(1)}px)`);
+      q.update(t, T.q, 6.85);
+      // the app
+      meet.update(t, 7.05, 9.85);
+      const pk = spring(t, 7.0, 1.2, .75), po = ease.inCubic(prog(t, 9.7, 10.05));
+      look(phone, clamp(pk * 2) * (1 - po), { y: (1 - pk) * 500 - po * 80, rx: (1 - clamp(pk)) * 20, ry: Math.sin(t * 1.2) * 4, s: (.9 + .1 * clamp(pk)) * (1 - .05 * po) });
+      page.style.transform = `translateY(${(-track(t, [[7.85, 0], [8.5, 820, ease.inOutCubic], [8.8, 820], [9.45, 1900, ease.inOutCubic]])).toFixed(1)}px)`;
+      embers.forEach((e, i) => { const u = ((t - 7 + i * .37) % 2.4) / 2.4, on = t > 7.0 && t < 10.0; look(e, on ? Math.sin(Math.PI * u) * .8 : 0, `translate(${(140 + (i * 137) % 800 + Math.sin(t * 2 + i) * 20).toFixed(1)}px,${(1650 - u * 1100).toFixed(1)}px) scale(${(.5 + (i % 3) * .3).toFixed(2)})`); });
+      // one tap
+      tapH.update(t, T.tap + .05, 13.55);
+      const mk = spring(t, T.tap, 1.25, .75), mo = ease.inCubic(prog(t, 13.45, 13.8));
+      look(mission, clamp(mk * 2) * (1 - mo), { y: (1 - mk) * 420 - mo * 80, rx: (1 - clamp(mk)) * 14, s: (.92 + .08 * clamp(mk)) * (1 + .03 * bump(t, TAP, TAP + .4)) });
+      look(m1, prog(t, TAP + .02, TAP + .14)); look(mflash, bump(t, TAP, TAP + .45) * .7);
+      sparks.forEach((sp, i) => { const a = (i / sparks.length) * Math.PI * 2, u = prog(t, TAP, TAP + .8), r = ease.outCubic(u) * (180 + (i % 4) * 50); look(sp, u > 0 && u < 1 ? 1 - u : 0, `translate(${(390 + Math.cos(a) * r * 1.4).toFixed(1)}px,${(990 + Math.sin(a) * r).toFixed(1)}px) translate(-50%,-50%) scale(${(1 - u * .6).toFixed(3)})`); });
+      const lv0 = spring(t, TAP + .45, 1.5, .62);
+      look(liveP, clamp(lv0 * 2) * (1 - mo), `translate(540px,1395px) translate(-50%,-50%) scale(${(.8 + .2 * lv0).toFixed(3)})`);
+      if (!mission.dataset.m) { mission.dataset.m = 1; }
+      touch.update(t, [[10.35, 980, 1700, 0], [10.8, 390, 990, 1], [11.05, 390, 990, 1], [11.35, 760, 1650, 0]], [TAP]);
+      // features
+      const fl = ease.outExpo(prog(t, T.feat, T.feat + .5));
+      look(featL, fl * (1 - prog(t, 18.2, 18.45)), `translateY(${((1 - fl) * 16).toFixed(1)}px)`);
+      feats.forEach((f, i) => {
+        const a = FEAT_AT[i], b = i < 2 ? FEAT_AT[i + 1] - .05 : 18.35;
+        const on = t > a - .05 && t < b + .45; f.el.style.display = on ? '' : 'none'; if (!on) return;
+        const k = spring(t, a, 1.3, .74), e = ease.inCubic(prog(t, b - .05, b + .4));
+        look(f.el, clamp(k * 2) * (1 - e), { x: (1 - k) * 760 - e * 760, ry: (1 - k) * -34 + e * 34, s: .92 + .08 * clamp(k) });
+        f.pic.style.backgroundSize = `${(860 * (1.06 - .06 * prog(t, a, b + .4))).toFixed(1)}px auto`;
+        f.rows.forEach((r, j) => { const s0 = a + .3 + j * .1, qq = ease.outExpo(prog(t, s0, s0 + .7)); look(r, Math.min(1, qq * 1.5), `translateY(${((1 - qq) * 105).toFixed(1)}%)`, (1 - qq) * 6); });
+        const lq = ease.outExpo(prog(t, a + .55, a + 1.1)); look(f.line, lq, `translateY(${((1 - lq) * 20).toFixed(1)}px)`);
+      });
+      // built by
+      built.update(t, T.built, 20.25);
+      const lv = spring(t, 18.95, 1.5, .62), bOut = prog(t, 20.05, 20.3);
+      look(live, clamp(lv * 2) * (1 - bOut), `translate(540px,1010px) translate(-50%,-50%) scale(${(.8 + .2 * lv).toFixed(3)})`);
+      liveSheen.style.transform = `translateX(${(-160 + prog(t, 19.3, 20.1) * 520).toFixed(1)}%)`;
+      end.update(t, T.end, DUR);
+    },
+  };
+}
+
 // ------------------------------------------------------------------ build and render
 async function paintCards() {
   const logo = await loadCardAssets();
@@ -555,7 +706,7 @@ window.ready = (async () => {
   await document.fonts.ready;
   const hud = document.getElementById('hud');
   const mark = new Image(); mark.src = 'assets/r-mark.png'; await mark.decode();
-  const E = ep === 'teaser' ? teaser(hud, mark) : ep === 'discover' ? discoverReel(hud, mark, await paintCards()) : ep === 'padel' ? padelReel(hud, mark) : stageEpisode(hud, ep, await paintCards());
+  const E = ep === 'teaser' ? teaser(hud, mark) : ep === 'discover' ? discoverReel(hud, mark, await paintCards()) : ep === 'padel' ? padelReel(hud, mark) : ep === 'challenge' ? challengeReel(hud, mark) : stageEpisode(hud, ep, await paintCards());
   window.DURATION = E.DUR;
   window.EVENTS = { duration: E.DUR, ...E.events };
   window.render = t => {

@@ -76,3 +76,18 @@ npm run capture-padel                                                     # → 
 node scripts/render.js --page "series.html?ep=padel" --out out/series/padel --scale 2 --quality 96
 python3 scripts/padel_music.py out/series/padel
 ```
+
+## 60 Days Challenge × Refract Tech (case study)
+
+`series.html?ep=challenge`: a 24.5 s reel on the training app Refract Tech built for Eagle Strength's
+60 Days Challenge. The app (github.com/SleimanMh/60-days-challenge) is filmed running locally
+with a made-up demo squad (`scripts/challenge-demo.js`), so no real athletes appear. Ends on a new,
+calmer close (`Finale`: the app's screens recede as a wall, the logo rises, a slow fade) with a
+warm piano ending in `scripts/challenge_music.py`.
+
+```bash
+(cd <60-days-challenge>/public && python3 -m http.server 4280) &
+node scripts/capture-challenge.js                                         # → assets/challenge/
+node scripts/render.js --page "series.html?ep=challenge" --out out/series/challenge --scale 2 --quality 96
+python3 scripts/challenge_music.py out/series/challenge
+```
