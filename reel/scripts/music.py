@@ -1,4 +1,4 @@
-# The reel's original soundtrack: a 120 BPM track in F minor plus interface sound design,
+# The reel's original soundtrack: a 120 BPM track in F minor plus sound design,
 # placed on the cue sheet the renderer exports (out/events.json). numpy only.
 #   python3 scripts/music.py   ->  out/music.wav  (48 kHz stereo)
 import json, os, wave
@@ -47,7 +47,10 @@ def spans(k): return [x for x in EV.get(k, []) if isinstance(x, list)]
 
 CH = [[53, 56, 60, 65], [49, 53, 56, 61], [56, 60, 63, 68], [51, 55, 58, 63]]   # Fm Db Ab Eb
 BASS = [41, 37, 44, 39]
-def chord_at(t): return int(max(0, t - 2.5) // 2) % 4
+G0, G1 = EV.get('groove', [2.5, 18.5])          # the groove's start and end
+S0, S1 = EV.get('siteSec', [G1, G1 + 1.5])         # the website: a held, building section
+LOGO = (EV.get('logo') or [S1 + .6])[0]
+def chord_at(t): return int(max(0, t - G0) // 2) % 4
 
 # ------------------------------------------------------------------ bed
 def pad(t0, dur, notes, g, cut=.03):
@@ -55,13 +58,13 @@ def pad(t0, dur, notes, g, cut=.03):
     s = lp(s, cut) * env(len(t), min(.6, dur / 3), .2, .9, min(.8, dur / 3))
     add(s, t0, g, -.35); add(s, t0 + .011, g, .35)
 
-pad(0.0, 2.6, [41, 53, 56, 60], .16, .02)                       # the dark before the spark
-for bar in range(8):                                             # under the story
-    t0 = 2.5 + bar * 2.0; pad(t0, 2.25, CH[bar % 4], .08)
-pad(18.5, 2.2, [49, 56, 61, 65], .14, .025)                      # the website: held, expectant
-pad(20.6, 2.95, [41, 53, 56, 60, 65, 72], .2, .04)               # the logo
+pad(0.0, G0 + .1, [41, 53, 56, 60], .16, .02)                       # the dark before the spark
+for bar in range(int((G1 - G0) // 2) + 1):                       # under the story
+    t0 = G0 + bar * 2.0; pad(t0, min(2.25, G1 - t0 + .2), CH[bar % 4], .08)
+pad(S0, S1 - S0 + .7, [49, 56, 61, 65], .14, .025)                      # the website: held, expectant
+pad(LOGO, DUR - LOGO, [41, 53, 56, 60, 65, 72], .2, .04)               # the logo
 
-# ------------------------------------------------------------------ drums + groove, 2.5 – 18.5
+# ------------------------------------------------------------------ drums + groove
 def kick():
     t = tt(.45); return sine(44 + 120 * np.exp(-t * 32), t) * np.exp(-t * 7) + hp(rnd.standard_normal(len(t)), .6) * np.exp(-t * 90) * .15
 def clap():
@@ -71,31 +74,31 @@ def clap():
 def hat(open_=False):
     t = tt(.22 if open_ else .05); return hp(rnd.standard_normal(len(t)), .55) * np.exp(-t * (16 if open_ else 80)) * .25
 K, CL = kick(), clap()
-t = 2.5
-while t < 18.5 - 1e-6:
-    b = round((t - 2.5) / BEAT)
+t = G0
+while t < G1 - 1e-6:
+    b = round((t - G0) / BEAT)
     add(K, t, .9)
     if b % 2 == 1: add(CL, t, .5, .05)
-    lift = t >= 8.5
+    lift = t >= G0 + 6
     add(hat(lift and b % 2 == 0), t + BEAT / 2, .55 if not lift else .5, .3)
     add(hat(), t + BEAT / 4, .28, -.35); add(hat(), t + 3 * BEAT / 4, .28, -.35)
     t += BEAT
-t = 2.5
-while t < 18.5 - 1e-6:                                            # bass in eighths
-    c = chord_at(t); m = BASS[c] + (12 if round((t - 2.5) / .25) % 4 == 2 else 0)
+t = G0
+while t < G1 - 1e-6:                                              # bass in eighths
+    c = chord_at(t); m = BASS[c] + (12 if round((t - G0) / .25) % 4 == 2 else 0)
     tb = tt(.24); s = lp(saw(hz(m), tb, .003), .07) * env(len(tb), .004, .08, .6, .05) + sine(hz(m), tb) * env(len(tb), .004, .1, .75, .05) * .9
     add(s, t, .3); t += .25
-t = 2.5; k = 0; PAT = [0, 1, 2, 3, 2, 1, 3, 2]
-while t < 18.5 - 1e-6:                                            # pluck arpeggio in sixteenths
-    c = chord_at(t); m = CH[c][PAT[k % 8]] + (24 if t >= 14.0 else 12)
+t = G0; k = 0; PAT = [0, 1, 2, 3, 2, 1, 3, 2]
+while t < G1 - 1e-6:                                            # pluck arpeggio in sixteenths
+    c = chord_at(t); m = CH[c][PAT[k % 8]] + (24 if t >= G0 + 11.5 else 12)
     tb = tt(.3); s = lp(saw(hz(m), tb) * .4 + sine(hz(m), tb), .3) * np.exp(-tb * 13)
     add(s, t, .11, .5 if k % 2 else -.5); t += .25; k += 1
 
 # website section: a half-time pulse, filtered, building to the shatter
-for i, tb0 in enumerate(np.arange(18.5, 20.0, .5)):
+for i, tb0 in enumerate(np.arange(S0, S1, .5)):
     add(K, tb0, .55 if i % 2 == 0 else .3)
-t = tt(1.5); rise = hp(rnd.standard_normal(len(t)), .3) * (t / 1.5) ** 2.5
-add(lp(rise, .25), 18.5, .22)
+t = tt(S1 - S0); rise = hp(rnd.standard_normal(len(t)), .3) * (t / t[-1]) ** 2.5
+add(lp(rise, .25), S0, .22)
 
 # ------------------------------------------------------------------ sound design
 def whoosh(d=.55):
@@ -125,7 +128,7 @@ for i, s in enumerate(ev('frag')): add(plink(84 + [0, 3, 7, 10, 12, 15, 19][i % 
 for s in ev('whoosh'): add(whoosh(), s - .3, .32, -.2); add(whoosh()[::-1] * .6, s - .3, .2, .3)
 for s in ev('hit'): add(impact(.55), s)
 for s in ev('boom'): add(impact(1.2, 30), s); add(shimmer([72, 79, 84, 91], 2.5, 1.5), s, .2)
-for s in ev('tick'): add(click(3200), s, .22, .2)
+for i, s in enumerate(ev('tick')): add(plink([72, 75, 79, 80, 84, 87][i % 6]), s, .16, .2); add(click(3200), s, .12)
 for s in ev('click') + ev('tap'): add(click(1800), s, .35); add(click(900), s + .012, .2)
 for s in ev('pop'): add(pop(), s, .2, .2)
 for s in ev('snap'): add(impact(.6, 60), s); add(click(1200), s, .4)

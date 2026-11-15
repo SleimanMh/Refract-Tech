@@ -58,7 +58,8 @@ export function Headline(parent, lines, opts = {}) {
   const rows = lines.map(([text, accent]) => {
     const row = h('div', 'hl-row', el);
     row.style.fontSize = size + 'px'; row.style.lineHeight = lh; row.style.fontWeight = weight;
-    const span = h('span', accent ? 'grad-text' : '', row, text);
+    // 'plain |accent' colours the part after the bar
+    const span = h('span', accent ? 'grad-text' : '', row, text.includes('|') ? text.replace(/^(.*)\|(.*)$/, '$1<span class="grad-text">$2</span>') : text);
     return span;
   });
   return {

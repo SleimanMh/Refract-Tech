@@ -1,123 +1,7 @@
-// 14 – 23.5 s: what we build (a 3D carousel of three living product demos), the real website
-// scrolling in a large browser, then the site shattering and gathering into the Refract Tech logo.
+// The finale, on its own clock (0 = 18.5 s in V2's timing; main.js shifts it): the real website
+// scrolling in a large browser down to its contact form, which shatters and gathers into the logo.
 import { bump, box, clamp, ease, h, lerp, live, look, prog, spring, track, tw } from './lib.js';
 import { C, ICON } from './ui.js';
-
-export const FIN = { services: [14.0, 18.5], site: [18.5, 20.0], close: [20.0, 23.5] };
-export const FIN_EVENTS = {
-  whoosh: [15.4, 16.9, 18.1], hit: [14.0, 15.45, 16.95, 18.5], click: [14.75, 22.2], tap: [15.95], swipe: [16.05], ping: [16.35],
-  pop: [17.15, 17.55], type: [[17.55, 18.0]], riser: [[17.7, 18.5]], shatter: [20.0], logo: [20.62], blip: [],
-};
-
-// ---------------------------------------------------------------- the three service demos
-const webDemo = () => `
-  <div class="app glass-soft">
-    <div class="side">
-      <div class="side-h"><span class="nova-mark sm"></span>Nova <span style="opacity:.55">Admin</span></div>
-      ${[['Overview', 'grid'], ['Bookings', 'calendar'], ['Members', 'users'], ['Reports', 'chart']].map(([s, i], k) => `<div class="side-i" id="si${k}">${ICON[i]}<span>${s}</span></div>`).join('')}
-      <div class="side-hl" id="shl"></div>
-    </div>
-    <div class="main">
-      <div class="view" id="vA"><div class="m-h">Bookings<span class="m-sub">Today</span></div>
-        ${[['L', 'Lea M.', '17:00', 'Paid'], ['K', 'Karim S.', '18:30', 'Paid'], ['M', 'Maya T.', '19:00', 'Pending'], ['O', 'Omar H.', '20:00', 'Paid']].map(([a, n, tm, s], i) => `<div class="tr"><i class="av av${i % 3}">${a}</i><span class="tn">${n}</span><span class="tt">${tm}</span><span class="ts ${s === 'Paid' ? 'ok' : ''}">${s}</span></div>`).join('')}
-      </div>
-      <div class="view" id="vB"><div class="m-h">Reports<span class="m-sub">Revenue <b>↑ 24%</b></span></div>
-        <div class="bars">${[.38, .52, .44, .66, .58, .84].map((v, i) => `<i style="--v:${v}" id="bar${i}"></i>`).join('')}</div>
-        <div class="expand" id="exp"><div class="ex-r"><span>Peak hour</span><b>19:00</b></div><div class="ex-r"><span>Top court</span><b>Court 2</b></div></div>
-      </div>
-    </div>
-  </div>`;
-const phoneA = `
-  <div class="ph-status"><span>9:41</span><span class="ph-isl"></span><span>●●●</span></div>
-  <div class="scr" id="scrA"><div class="ph-hi">Good evening,</div><div class="ph-name">Lea</div>
-    <div class="ph-card"><div class="ph-pic"></div><div class="ph-ct"><div class="label" style="color:#F7F5FF;opacity:.75">Next session</div><div class="ph-ch">Court 2 · 18:30</div></div></div>
-    <div class="ph-row"><i>${ICON.users}</i>Coaching<span>Sat 10:00</span></div><div class="ph-row"><i>${ICON.calendar}</i>Open match<span>Sun</span></div>
-    <div class="ph-btn">Book again</div></div>
-  <div class="scr" id="scrB"><div class="ph-ok"><i>${ICON.check}</i></div><div class="ph-hi" style="text-align:center">You're booked</div><div class="ph-name" style="text-align:center;font-size:40px">Court 2 · Fri 18:30</div>
-    <div class="qr">${Array.from({ length: 49 }, (_, i) => `<i style="opacity:${[0, 1, 2, 4, 6, 7, 8, 13, 14, 20, 21, 27, 28, 34, 35, 40, 41, 42, 44, 46, 48, 10, 17, 24, 31, 16, 30, 38].includes(i) ? 1 : .12}"></i>`).join('')}</div></div>`;
-const phoneB = `
-  <div class="ph-status"><span>9:41</span><span class="ph-isl"></span><span>●●●</span></div>
-  <div class="ph-hi" style="margin-top:30px">Your progress</div>
-  <svg viewBox="0 0 200 200" class="ring-p"><circle cx="100" cy="100" r="80" stroke="rgba(247,245,255,.12)" stroke-width="16" fill="none"/><circle id="rp" cx="100" cy="100" r="80" stroke="url(#rg2)" stroke-width="16" fill="none" stroke-linecap="round" transform="rotate(-90 100 100)" stroke-dasharray="502.6"/>
-    <defs><linearGradient id="rg2"><stop offset="0" stop-color="#8B5CF0"/><stop offset="1" stop-color="#FF906B"/></linearGradient></defs><text x="100" y="112" text-anchor="middle" fill="#F7F5FF" font-size="40" font-family="Albert Sans" font-weight="500">12</text></svg>
-  <div class="ph-row"><i>${ICON.star}</i>Level up<span>3 to go</span></div>`;
-const aiDemo = () => `
-  <div class="chat glass-soft">
-    <div class="chat-h"><span class="ai-av">${ICON.spark}</span>Nova Assistant<span class="online"></span></div>
-    <div class="bub me" id="b1">Which slots fill up fastest?</div>
-    <div class="bub ai" id="b2"><span class="typing" id="typ"><i></i><i></i><i></i></span><span id="b2t"></span></div>
-  </div>
-  <div class="flow glass-soft">
-    <svg viewBox="0 0 800 200" width="800" height="200" fill="none"><path d="M120 100H680" stroke="url(#fl)" stroke-width="3" stroke-dasharray="4 10"/>
-      <defs><linearGradient id="fl"><stop offset="0" stop-color="#8B5CF0"/><stop offset="1" stop-color="#FF906B"/></linearGradient></defs>
-      <circle id="fp0" cy="100" r="9" fill="#F7F5FF"/><circle id="fp1" cy="100" r="9" fill="#FF906B"/></svg>
-    ${[['Form', 'form'], ['AI', 'spark'], ['CRM', 'db'], ['Email', 'mail']].map(([s, i], k) => `<div class="fn" id="fn${k}" style="left:${40 + k * 186}px"><i style="color:${C.stages[k + 1]}">${ICON[i]}</i><span>${s}</span></div>`).join('')}
-  </div>`;
-const AI_REPLY = 'Evenings, 18:00–21:00. I’ve opened two extra courts for Friday.';
-
-export function Services(world) {
-  const root = h('div', 'layer carousel', world);
-  const mk = (i, inner, chips) => {
-    const el = h('div', 'svc glass', root, `<div class="svc-in">${inner}</div><div class="svc-chips">${chips.map(c => `<span class="chip">${c}</span>`).join('')}</div><span class="svc-n">0${i + 1}</span>`);
-    box(el, 110, 540, 860, 1000);
-    return el;
-  };
-  const cards = [
-    mk(0, webDemo(), ['Portals', 'Marketplaces', 'SaaS', 'Custom software']),
-    mk(1, `<div class="phone back">${phoneB}</div><div class="phone front">${phoneA}</div><div class="notif glass-soft"><span class="nova-mark sm"></span><div><b>Nova</b><span>Your court is ready in 15 min</span></div><em>now</em></div><div class="touch"></div>`, ['iOS', 'Android', 'One codebase']),
-    mk(2, aiDemo(), ['Assistants', 'Workflows', 'APIs', 'Integrations']),
-  ];
-  const q = s => root.querySelector(s);
-  const si = [0, 1, 2, 3].map(i => q('#si' + i)), shl = q('#shl'), vA = q('#vA'), vB = q('#vB'), exp = q('#exp');
-  const bars = [...root.querySelectorAll('.bars i')];
-  const scrA = q('#scrA'), scrB = q('#scrB'), notif = q('.notif'), touch = q('.touch'), rp = q('#rp');
-  const b1 = q('#b1'), b2 = q('#b2'), typ = q('#typ'), b2t = q('#b2t'), fns = [0, 1, 2, 3].map(i => q('#fn' + i)), fps = [q('#fp0'), q('#fp1')];
-
-  const pos = t => spring(t, 15.45, 1.3, .62) + spring(t, 16.95, 1.3, .62) + ease.inExpo(prog(t, 18.0, 18.5)) * 1.8;
-  return {
-    /** where card i's point (lx, ly) sits on screen when it faces the camera */
-    at: (lx, ly) => [110 + lx, 540 + ly],
-    update(t) {
-      if (!live(root, t, 13.9, 18.55)) return;
-      const c = pos(t), enter = 1 - spring(t, 14.0, 1.15, .78);
-      cards.forEach((el, i) => {
-        let d = i - c; if (i > 0) d += enter * 1.4;
-        const a = Math.abs(d);
-        const o = (i === 0 ? prog(t, 13.92, 14.12) : prog(t, 14.0, 14.25)) * (1 - clamp(a - 1.7)) * (1 - prog(t, 18.38, 18.52));
-        const s0 = i === 0 ? 1 + .05 * (1 - tw(t, 13.92, 14.3, ease.outCubic)) : 1;
-        look(el, o, { x: d * 610, z: -a * 480, ry: -d * 34, s: s0 }, Math.min(a, 1.4) * 7 + bump(t, 18.05, 18.5) * 10);
-        el.style.zIndex = String(100 - Math.round(a * 10));
-      });
-
-      // web: the cursor opens Reports; the highlight slides over magnetically; the panel unfolds
-      const sl = spring(t, 14.75, 1.7, .55);
-      box(shl, 20, lerp(234, 402, sl), 196, 66);
-      si.forEach((s, i) => s.classList.toggle('on', (t < 14.8 && i === 1) || (t >= 14.8 && i === 3)));
-      look(vA, 1 - prog(t, 14.8, 14.95), { x: -40 * prog(t, 14.8, 14.95) });
-      look(vB, prog(t, 14.85, 15.0), { x: 40 * (1 - prog(t, 14.85, 15.0)) });
-      bars.forEach((b, i) => b.style.setProperty('--p', tw(t, 14.9 + i * .05, 15.3 + i * .05, ease.outBack).toFixed(3)));
-      exp.style.height = (tw(t, 15.05, 15.4, ease.outCubic) * 190).toFixed(1) + 'px';
-
-      // mobile: a tap, a swipe to the ticket, a notification, the progress ring filling
-      const sw = tw(t, 16.02, 16.3, ease.inOutQuint);
-      look(scrA, 1 - sw * .8, { x: -sw * 300 }); look(scrB, sw, { x: (1 - sw) * 300 });
-      const nk = spring(t, 16.35, 1.5, .62);
-      look(notif, clamp(nk * 2) * (1 - prog(t, 16.95, 17.1)), { y: (1 - nk) * -160 });
-      const tp = track(t, [[15.7, [440, 860]], [15.95, [300, 712], ease.outCubic]]);
-      look(touch, prog(t, 15.7, 15.8) * (1 - prog(t, 16.05, 16.2)), `translate(${tp[0]}px,${tp[1]}px) translate(-50%,-50%) scale(${(1 - .25 * bump(t, 15.9, 16.05)).toFixed(3)})`);
-      rp.style.strokeDashoffset = (502.6 * (1 - .78 * tw(t, 15.4, 16.4, ease.outCubic))).toFixed(1);
-
-      // AI: a question, the assistant thinking, its answer streaming, the workflow it sets off
-      look(b1, prog(t, 17.15, 17.3), { y: (1 - ease.outBack(prog(t, 17.15, 17.45))) * 30, s: .9 + .1 * ease.outBack(prog(t, 17.15, 17.45)) });
-      look(b2, prog(t, 17.35, 17.45), { y: (1 - ease.outCubic(prog(t, 17.35, 17.55))) * 20 });
-      typ.style.display = t < 17.6 ? '' : 'none';
-      [...typ.children].forEach((d, i) => { d.style.transform = `translateY(${(-8 * Math.max(0, Math.sin((t * 9) - i * .9))).toFixed(1)}px)`; });
-      b2t.textContent = t < 17.6 ? '' : AI_REPLY.slice(0, Math.round(prog(t, 17.6, 18.05) * AI_REPLY.length));
-      fns.forEach((f, i) => { const k = ease.outBack(prog(t, 17.05 + i * .07, 17.35 + i * .07)); look(f, prog(t, 17.05 + i * .07, 17.2 + i * .07), { s: .6 + .4 * k }); f.classList.toggle('on', t > 17.6 && ((t - 17.6) * 3) % 4 >= i && ((t - 17.6) * 3) % 4 < i + 1); });
-      fps.forEach((p, j) => { const u = ((t - 17.4) * .8 + j * .5) % 1; p.setAttribute('cx', (120 + u * 560).toFixed(1)); p.style.opacity = (t > 17.4 ? Math.sin(u * Math.PI) : 0).toFixed(3); });
-    },
-  };
-}
 
 // ---------------------------------------------------------------- the real website
 const STRIP = ['hero', 'stage', 'work', 'work2', 'contact'];
@@ -134,7 +18,7 @@ export function Site(world) {
   h('img', 'site-head', view).src = 'assets/site/header.png';
   const glare = h('div', 'glare', win);
   return {
-    scrollAt: t => track(t, [[18.95, 0], [19.75, 2 * SH, ease.inOutQuint]]),
+    scrollAt: t => track(t, [[18.5, 2 * SH], [18.95, 2 * SH], [19.75, 4 * SH, ease.inOutQuint]]),
     update(t) {
       if (!live(root, t, 18.35, 20.02)) return;
       const k = ease.outExpo(prog(t, 18.38, 18.9));
@@ -153,7 +37,7 @@ export function Close(world) {
   const COLS = 5, ROWS = 7, tw_ = BROWSER[2] / COLS, th = BROWSER[3] / ROWS;
   // a still of the browser as it stands when the scroll ends, cut into tiles
   const snap = `<div class="window site-win" style="left:0;top:0;width:${BROWSER[2]}px;height:${BROWSER[3]}px"><div class="win-bar">${browserBar()}</div>
-    <div class="site-view" style="left:0;top:${BAR}px;width:${SW}px;height:${BROWSER[3] - BAR}px"><img src="assets/site/work.png" style="width:${SW}px;display:block"><img class="site-head" src="assets/site/header.png"></div></div>`;
+    <div class="site-view" style="left:0;top:${BAR}px;width:${SW}px;height:${BROWSER[3] - BAR}px"><img src="assets/site/contact.png" style="width:${SW}px;display:block"><img class="site-head" src="assets/site/header.png"></div></div>`;
   const LOGO = [540, 720];
   const tiles = [];
   for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {

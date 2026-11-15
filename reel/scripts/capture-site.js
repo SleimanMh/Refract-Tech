@@ -26,5 +26,11 @@ const W = 390, H = 844;
     await p.evaluate(([id, dy]) => { const el = document.getElementById(id); window.scrollTo(0, el.getBoundingClientRect().top + scrollY + dy); }, [id, dy]);
     await p.waitForTimeout(2200); await shot(name);
   }
+  // the three service cards, each on its own, for the carousel
+  const items = await p.$$('.work-card');
+  for (let i = 0; i < items.length; i++) {
+    await items[i].scrollIntoViewIfNeeded(); await p.waitForTimeout(1800);
+    await items[i].screenshot({ path: path.join(OUT, `work-card-${i + 1}.png`) }); console.log('shot work-card', i + 1);
+  }
   await b.close();
 })();
