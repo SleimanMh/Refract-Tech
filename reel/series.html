@@ -89,6 +89,26 @@ svg { display:block; }
 /* the closing */
 .pulse { position:absolute; left:0; top:0; width:300px; height:300px; border-radius:50%; border:3px solid rgba(182,108,250,.8); box-shadow:0 0 30px rgba(182,108,250,.5); }
 .email .e-txt { position:relative; min-height:1.2em; }
+
+/* Discover reel: notes that flip into a plan, the plan board, the scan line, the lens */
+.note { position:absolute; left:0; top:0; height:96px; transform-style:preserve-3d; }
+.note .nf, .note .nb { position:absolute; inset:0; display:flex; align-items:center; gap:20px; padding:0 38px; border-radius:26px; white-space:nowrap; font-size:46px; font-weight:500; backface-visibility:hidden; }
+.note .nf { position:relative; width:max-content; background:rgba(40,34,92,.94); box-shadow:inset 0 0 0 2px rgba(182,108,250,.4), 0 24px 50px -24px #000; }
+.note .nf b { width:14px; height:14px; border-radius:50%; background:var(--coral); box-shadow:0 0 12px var(--coral); }
+.note .nb { transform:rotateX(180deg); background:linear-gradient(90deg,rgba(113,61,232,.55),rgba(46,39,104,.95) 60%); box-shadow:inset 0 0 0 2px rgba(182,108,250,.55), 0 0 calc(var(--g,0) * 50px) rgba(182,108,250,.7); }
+.note .nb i { display:grid; place-items:center; width:46px; height:46px; border-radius:50%; background:linear-gradient(135deg,#8B5CF0,#FF906B); flex:none; }
+.note .nb i svg { width:28px; color:#fff; }
+.plan { position:absolute; left:120px; top:640px; width:840px; height:800px; border-radius:44px;
+  background:linear-gradient(160deg,rgba(36,31,84,.7),rgba(17,17,43,.75)); box-shadow:inset 0 0 0 2px rgba(182,108,250,.35), 0 60px 120px -50px #000; }
+.plan-h { display:flex; justify-content:space-between; align-items:center; padding:34px 40px 0; font-size:32px; font-weight:600; letter-spacing:.02em; }
+.plan-h em { font-style:normal; font-size:24px; letter-spacing:.2em; text-transform:uppercase; color:var(--acc); }
+.scan { position:absolute; left:0; right:0; top:0; height:6px; background:linear-gradient(90deg,transparent,#B66CFA 20%,#fff 50%,#FF906B 80%,transparent); box-shadow:0 0 40px 10px rgba(182,108,250,.55); }
+.lens { position:absolute; left:0; right:0; height:300px; }
+.lens-blur, .lens-sharp { position:absolute; inset:0; text-align:center; }
+.lens-blur { filter:blur(16px); opacity:.6; }
+.lrow2 { font-size:110px; font-weight:500; letter-spacing:-.03em; line-height:1.15; white-space:nowrap; }
+.lens-ring { position:absolute; left:0; top:0; width:330px; height:330px; border-radius:50%; border:4px solid rgba(247,245,255,.85);
+  box-shadow:0 0 40px rgba(182,108,250,.8), inset 0 0 40px rgba(182,108,250,.35); }
 </style>
 </head>
 <body>

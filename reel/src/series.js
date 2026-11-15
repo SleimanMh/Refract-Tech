@@ -3,7 +3,7 @@
 // business, shows that stage's card from the website, and ends on the email address.
 // Open series.html?ep=teaser | discover | design | build | connect | launch | evolve.
 import { ART_KEYS, CARD_H, CARD_W, loadCardAssets, paintCard } from '../assets/cardArt-series.js';
-import { bump, clamp, ease, h, look, prog, spring, track, tw } from './lib.js';
+import { bump, clamp, ease, h, lerp, look, prog, spring, track, tw } from './lib.js';
 import { C, ICON, Sky } from './ui.js';
 import { Hook } from './scenes.js';
 
@@ -91,6 +91,8 @@ function StageCard(parent, cv, accent) {
       const sw = prog(t, tin + .8, tin + 1.6);
       look(sheen, bump(t, tin + .8, tin + 1.6), `translateX(${(-130 + sw * 260).toFixed(1)}%) rotate(16deg)`);
     },
+    /** push in on the card's goals checklist (0 = whole card, 1 = close up) */
+    zoom(z) { cv.style.transformOrigin = '33% 56%'; cv.style.transform = `scale(${(1 + .75 * z).toFixed(4)})`; },
   };
 }
 
@@ -276,6 +278,110 @@ function teaser(hud, mark) {
   };
 }
 
+// ------------------------------------------------------------------ Discover, the full 20 s reel
+// The logo builds; a question; the messy questions every new idea brings swarm around; on the drop
+// each one flips to its answer and snaps into a clean plan; the site's Discover card turns in and
+// the camera dives into its goals; a lens sweeps the blur off "Clarity first."; the contact close.
+const CHAOS = [
+  ["Who's it for?", 'Target customers', 290, 700, -7], ['Budget?', 'Scoped budget', 820, 640, 6], ['Which features?', 'Must-have features', 330, 960, 4],
+  ['Timeline?', 'Phased roadmap', 820, 900, -5], ['Where to start?', 'A clear first step', 380, 1240, -3], ['Competitors?', 'Market check', 800, 1170, 7],
+];
+function Note(parent, q, a, x, y, rot, i) {
+  const el = h('div', 'note', parent, `<div class="nf"><b></b>${q}</div><div class="nb"><i>${ICON.check}</i>${a}</div>`);
+  const back = el.querySelector('.nb'), chk = back.querySelector('i');
+  return {
+    update(t, tin, snap, tout) {
+      const on = t > tin - .05 && t < tout + .4; el.style.display = on ? '' : 'none'; if (!on) return;
+      const k = spring(t, tin, 1.7, .5);
+      // drifting, restless, until it is resolved
+      const restless = 1 - tw(t, snap - .15, snap + .1);
+      const jx = Math.sin(t * (2.1 + i * .37) + i) * 26 * restless, jy = Math.cos(t * (1.7 + i * .29) + i * 2) * 20 * restless;
+      const m = tw(t, snap, snap + .45, ease.inOutCubic);
+      const tx = 540, ty = 795 + i * 108;                          // its row in the plan
+      const X = lerp(x + jx, tx, m), Y = lerp(y + jy, ty, m);
+      const flip = tw(t, snap + .05, snap + .4, ease.inOutCubic) * 180;
+      const e = ease.inCubic(prog(t, tout - .1 + i * .03, tout + .25 + i * .03));
+      if (!el.dataset.w0) el.dataset.w0 = el.offsetWidth;
+      el.style.width = lerp(+el.dataset.w0, 760, m).toFixed(1) + 'px';
+      look(el, clamp(k * 3) * (1 - e), `translate(${X.toFixed(1)}px,${(Y - e * 60).toFixed(1)}px) translate(-50%,-50%) rotate(${(lerp(rot + Math.sin(t * 1.3 + i) * 4 * restless, 0, m) + (1 - clamp(k)) * 30).toFixed(2)}deg) rotateX(${flip.toFixed(1)}deg) scale(${(.4 + .6 * k).toFixed(3)})`);
+      chk.style.transform = `scale(${ease.outBack(prog(t, snap + .35, snap + .6)).toFixed(3)})`;
+      back.style.setProperty('--g', bump(t, snap + .3, snap + .9).toFixed(3));
+    },
+  };
+}
+
+/** Words under a blur that a moving lens wipes clear, then the whole line comes into focus. */
+function Lens(parent, lines, y) {
+  const el = h('div', 'lens', parent); el.style.top = y + 'px';
+  const html = lines.map(l => `<div class="lrow2">${l.replace(/\*([^*]+)\*/g, '<span class="acc" style="--u:1">$1</span>')}</div>`).join('');
+  const blur = h('div', 'lens-blur', el, html), sharp = h('div', 'lens-sharp', el, html);
+  const ring = h('div', 'lens-ring', el);
+  return {
+    update(t, tin, tout) {
+      const on = t > tin - .05 && t < tout + .4; el.style.display = on ? '' : 'none'; if (!on) return;
+      const show = prog(t, tin, tin + .3) * (1 - prog(t, tout - .2, tout + .2));
+      el.style.opacity = show.toFixed(3);
+      const u = tw(t, tin + .15, tin + 1.25, ease.inOutSine);
+      const lx = 120 + u * 840, ly = 120 + Math.sin(u * Math.PI * 2) * 70;
+      const R = 150 + 1200 * tw(t, tin + 1.25, tin + 1.75, ease.inOutCubic);
+      const mask = `radial-gradient(circle at ${lx.toFixed(0)}px ${ly.toFixed(0)}px, #000 ${R.toFixed(0)}px, transparent ${(R + 50).toFixed(0)}px)`;
+      sharp.style.webkitMaskImage = sharp.style.maskImage = mask;
+      look(blur, 1 - prog(t, tin + 1.3, tin + 1.7));
+      look(ring, (1 - prog(t, tin + 1.2, tin + 1.45)) * prog(t, tin + .1, tin + .25), `translate(${lx.toFixed(1)}px,${ly.toFixed(1)}px) translate(-50%,-50%)`);
+    },
+  };
+}
+
+function discoverReel(hud, mark, cards) {
+  const DUR = 20.0, acc = C.stages[0];
+  hud.style.setProperty('--acc', acc);
+  const world = h('div', 'world', hud);
+  const intro = Hook(world, mark);
+  const num = Backdrop(hud, '01');
+  const tag = h('div', 'ep-tag', hud, `<b></b>Refract Tech · Step 01 / 06`);
+  const q1 = Lines(hud, ['Have a business idea', '*but no clear plan?*'], { y: 760 });
+  const fam = Lines(hud, ['Sound *familiar?*'], { y: 300, size: 84 });
+  const plan = h('div', 'plan', hud, `<div class="plan-h"><span>Your discovery plan</span><em>Step 01</em></div>`);
+  const planLine = Lines(hud, ['We turn the chaos into', '*a clear, scoped plan.*'], { y: 300, size: 78 });
+  const notes = CHAOS.map(([q, a, x, y, r], i) => Note(hud, q, a, x, y, r, i));
+  const SNAP = CHAOS.map((_, i) => 7.7 + i * .25), CHAOS_IN = CHAOS.map((_, i) => 4.75 + i * .16);
+  const label = h('div', 'ep-label', hud, 'Step 01 · Discover');
+  const msg = Lines(hud, ['Goals, users and', '*a prioritised roadmap.*'], { y: 330, size: 80 });
+  const card = StageCard(hud, cards[0], acc);
+  const lens = Lens(hud, ['Clarity first.', '*Then we build.*'], 780);
+  const scan = h('div', 'scan', hud);
+  const end = Closing(hud, ['Got an idea?', "*Let's talk.*"]);
+  const CARD = 10.05;
+  return {
+    DUR, focus: t => intro.focus(t),
+    events: { lock: [intro.LOCK], tick: [2.65], swirl: [4.7], riser: [[6.3, 7.2]], drop: [7.2], snaps: SNAP, whoosh: [CARD], zoom: [11.25], shimmer: [13.75], end: [16.0] },
+    update(t) {
+      intro.update(t);
+      num.update(t, 2.6, 7.2);
+      look(tag, prog(t, 2.6, 2.9) * (1 - prog(t, 4.55, 4.75)), `translateY(${((1 - ease.outCubic(prog(t, 2.6, 3.0))) * -24).toFixed(1)}px)`);
+      q1.update(t, 2.65, 4.6);
+      fam.update(t, 4.85, 7.15);
+      // the plan board: its frame draws in on the drop, the notes fly into its rows
+      const pk = spring(t, 7.25, 1.4, .75), po = ease.inCubic(prog(t, 9.75, 10.1));
+      look(plan, clamp(pk * 2) * (1 - po), `translateY(${((1 - pk) * 80 - po * 60).toFixed(1)}px) scale(${(.94 + .06 * clamp(pk)).toFixed(3)})`);
+      planLine.update(t, 7.3, 9.95);
+      notes.forEach((n, i) => n.update(t, CHAOS_IN[i], SNAP[i], 9.75));
+      const sc = prog(t, 7.15, 7.75);
+      look(scan, sc > 0 && sc < 1 ? Math.sin(Math.PI * sc) : 0, `translateY(${(520 + sc * 1000).toFixed(1)}px)`);
+      // the site's Discover card, and a dive into its goals
+      const lk = ease.outExpo(prog(t, CARD, CARD + .6));
+      look(label, lk * (1 - prog(t, 13.35, 13.6)), `translateY(${((1 - lk) * 16).toFixed(1)}px)`);
+      label.style.letterSpacing = `${(.26 + (1 - lk) * .25).toFixed(3)}em`;
+      msg.update(t, CARD + .3, 13.5);
+      card.update(t, CARD + .15, 13.55);
+      const z = track(t, [[11.2, 0], [11.75, 1, ease.inOutCubic], [12.75, 1], [13.2, 0, ease.inOutCubic]]);
+      card.zoom(z);
+      lens.update(t, 13.7, 15.95);
+      end.update(t, 16.0);
+    },
+  };
+}
+
 // ------------------------------------------------------------------ build and render
 async function paintCards() {
   const logo = await loadCardAssets();
@@ -290,7 +396,7 @@ window.ready = (async () => {
   await document.fonts.ready;
   const hud = document.getElementById('hud');
   const mark = new Image(); mark.src = 'assets/r-mark.png'; await mark.decode();
-  const E = ep === 'teaser' ? teaser(hud, mark) : stageEpisode(hud, ep, await paintCards());
+  const E = ep === 'teaser' ? teaser(hud, mark) : ep === 'discover' ? discoverReel(hud, mark, await paintCards()) : stageEpisode(hud, ep, await paintCards());
   window.DURATION = E.DUR;
   window.EVENTS = { duration: E.DUR, ...E.events };
   window.render = t => {
