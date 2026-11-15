@@ -15,7 +15,8 @@ const server = http.createServer((q, s) => {
   fs.readFile(f, (e, d) => { if (e) { s.writeHead(404); s.end(); } else { s.writeHead(200, { 'content-type': TYPES[path.extname(f)] || 'application/octet-stream' }); s.end(d); } });
 });
 async function page(browser) {
-  const p = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
+  // --scale 2 renders every frame at 2160 × 3840 (4K) from the same 1080 × 1920 layout
+  const p = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: +opt('scale', 1) });
   p.on('pageerror', e => console.error('pageerror', e.message));
   p.on('console', m => { if (m.type() === 'error') console.error('console', m.text()); });
   await p.goto('http://localhost:4191/' + PAGE, { waitUntil: 'networkidle' });
@@ -47,7 +48,7 @@ async function page(browser) {
       const k = next++, f = Math.floor(k / S), j = k % S;
       const t = f / FPS + (j / S) * (.5 / FPS);
       await p.evaluate(t => window.render(t), t);
-      await p.screenshot({ path: path.join(dir, `s${String(k).padStart(5, '0')}.jpg`), type: 'jpeg', quality: 94 });
+      await p.screenshot({ path: path.join(dir, `s${String(k).padStart(5, '0')}.jpg`), type: 'jpeg', quality: +opt('quality', 94) });
       if (++done % 150 === 0) console.log(`${done}/${last - from * S} samples, ${Math.round((Date.now() - t0) / 1000)}s`);
     }
     await b.close();
