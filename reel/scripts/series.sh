@@ -11,7 +11,7 @@ for ep in $EPS; do
   dir=out/series/$ep
   rm -rf "$dir/samples"
   node scripts/render.js --page "series.html?ep=$ep" --out "$dir" | tail -1
-  python3 scripts/series_music.py "$dir"
+  if [ "$ep" = teaser ]; then python3 scripts/teaser_music.py "$dir"; else python3 scripts/series_music.py "$dir"; fi
   bash scripts/encode.sh "$dir" "Refract-Tech-$num-$ep.mp4"
   n=$((n + 1))
 done

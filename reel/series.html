@@ -39,7 +39,7 @@ svg { display:block; }
 .end { position:absolute; inset:0; }
 .logo { position:absolute; left:0; top:0; display:grid; place-items:center; }
 .logo svg { position:absolute; inset:0; } .logo img { position:relative; }
-.email { position:absolute; left:0; top:0; display:flex; align-items:center; gap:20px; padding:30px 50px; border-radius:999px; overflow:hidden; white-space:nowrap; font-size:52px; font-weight:600; letter-spacing:-.5px;
+.email { position:absolute; left:0; top:0; display:flex; align-items:center; gap:20px; padding:30px 39px; border-radius:999px; overflow:hidden; white-space:nowrap; font-size:52px; font-weight:600; letter-spacing:-.5px;
   background:linear-gradient(90deg,rgba(113,61,232,.5),rgba(182,108,250,.35) 50%,rgba(255,144,107,.45)); box-shadow:0 0 0 3px rgba(182,108,250,.8), 0 24px 80px -12px rgba(113,61,232,.7); }
 .email i { width:52px; display:block; position:relative; } .email span:last-child { position:relative; }
 .email-sheen { position:absolute; top:0; bottom:0; left:0; width:40%; background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent); }
@@ -48,6 +48,47 @@ svg { display:block; }
 .site-pill { position:absolute; left:0; top:0; display:flex; align-items:center; gap:22px; padding:30px 34px 30px 52px; border-radius:999px; overflow:hidden; font-size:60px; font-weight:600; white-space:nowrap;
   background:rgba(27,24,66,.92); box-shadow:0 0 0 3px rgba(182,108,250,.8), 0 24px 80px -12px rgba(113,61,232,.7); }
 .site-pill em { font-style:normal; font-size:30px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; padding:12px 22px; border-radius:30px; background:var(--coral); color:var(--navy); position:relative; }
+
+/* the teaser's logo opening (shared with the main reel) */
+.world, .layer { position:absolute; left:0; top:0; width:1080px; height:1920px; transform-style:preserve-3d; }
+.world { perspective:2400px; perspective-origin:540px 900px; }
+.layer { transform-origin:540px 1040px; }
+.spark { position:absolute; left:0; top:0; width:220px; height:220px; border-radius:50%;
+  background:radial-gradient(circle, #fff 0, #F3EAFF 12%, rgba(182,108,250,.95) 26%, rgba(113,61,232,.45) 46%, transparent 68%); }
+.spark-glow { position:absolute; left:0; top:0; width:1000px; height:1000px; border-radius:50%; background:radial-gradient(closest-side, rgba(182,108,250,.55), rgba(113,61,232,.2) 50%, transparent); }
+.flare { position:absolute; left:0; top:0; width:1500px; height:10px; border-radius:50%;
+  background:linear-gradient(90deg,transparent,rgba(182,108,250,.6) 30%,#fff 50%,rgba(255,144,107,.6) 70%,transparent); box-shadow:0 0 30px 6px rgba(182,108,250,.45); }
+.flare-v { width:8px; height:520px; background:linear-gradient(180deg,transparent,rgba(247,245,255,.85) 50%,transparent); box-shadow:none; }
+.hook-logo { position:absolute; left:0; top:0; width:1080px; height:1920px; transform-style:preserve-3d; }
+.r-shard { position:absolute; }
+.ring-tip { position:absolute; left:0; top:0; width:46px; height:46px; border-radius:50%; background:radial-gradient(circle,#fff 0,#F3EAFF 25%,rgba(255,144,107,.8) 45%,transparent 72%); box-shadow:0 0 40px 10px rgba(182,108,250,.5); }
+.hook-shine { position:absolute; overflow:hidden; -webkit-mask-image:url(assets/r-mark.png); mask-image:url(assets/r-mark.png); -webkit-mask-size:100% 100%; mask-size:100% 100%; }
+.hook-shine i { position:absolute; top:-40%; bottom:-40%; left:0; width:45%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.85),transparent); }
+.hook-word { position:absolute; left:0; right:0; top:1104px; text-align:center; overflow:hidden; padding-bottom:.1em; font-size:116px; font-weight:600; letter-spacing:-3.5px; line-height:1.12; }
+.hook-word span { display:inline-block; } .hook-word b { color:var(--coral); font-weight:600; }
+.hook-tag { position:absolute; left:0; right:0; top:1276px; display:flex; justify-content:center; align-items:center; gap:26px; font-size:32px; font-weight:400; letter-spacing:.34em; text-transform:uppercase; color:var(--ink2); }
+.hook-tag i { display:block; width:90px; height:3px; border-radius:2px; background:var(--violet); }
+.logo-glow { position:absolute; left:0; top:0; width:1000px; height:1000px; border-radius:50%; background:radial-gradient(closest-side,rgba(182,108,250,.6),rgba(113,61,232,.25) 55%,transparent); }
+.logo-ring { position:absolute; left:0; top:0; width:420px; height:420px; }
+
+/* what we build: one offer at a time */
+.ocard { position:absolute; left:110px; top:520px; width:860px; height:880px; border-radius:48px; overflow:hidden; padding:44px 56px;
+  background:linear-gradient(160deg,rgba(44,37,100,.95),rgba(19,17,48,.97)) padding-box, linear-gradient(135deg,rgba(139,92,240,.95),rgba(182,108,250,.35) 50%,rgba(255,144,107,.9)) border-box;
+  border:3px solid transparent; box-shadow:0 70px 140px -50px #000, 0 0 140px -40px rgba(113,61,232,.7); }
+.o-top { display:flex; justify-content:space-between; align-items:center; font-size:28px; font-weight:500; letter-spacing:.2em; color:var(--ink3); }
+.o-dots { display:flex; gap:10px; } .o-dots i { width:34px; height:8px; border-radius:4px; background:rgba(247,245,255,.16); } .o-dots i.on { background:linear-gradient(90deg,#B66CFA,#FF906B); }
+.o-tile { position:relative; width:380px; height:340px; margin:48px 0 44px; border-radius:56px; display:grid; place-items:center;
+  background:linear-gradient(145deg,rgba(113,61,232,.35),rgba(255,144,107,.18)); box-shadow:inset 0 0 0 2px rgba(247,245,255,.12); }
+.o-glow { position:absolute; inset:-40px; border-radius:50%; background:radial-gradient(closest-side,rgba(182,108,250,.45),transparent); }
+.o-tile svg { position:relative; filter:drop-shadow(0 0 18px rgba(182,108,250,.6)); }
+.o-row { overflow:hidden; padding-bottom:.08em; white-space:nowrap; } .o-row span { display:inline-block; font-size:70px; font-weight:600; letter-spacing:-.03em; line-height:1.06; }
+.o-title .o-row:last-child span { background:linear-gradient(90deg,#B66CFA,#FF906B); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.o-line { margin-top:24px; font-size:34px; line-height:1.3; color:var(--ink2); }
+.o-sheen { position:absolute; top:-30%; bottom:-30%; left:30%; width:40%; background:linear-gradient(100deg,transparent,rgba(255,255,255,.14),transparent); }
+
+/* the closing */
+.pulse { position:absolute; left:0; top:0; width:300px; height:300px; border-radius:50%; border:3px solid rgba(182,108,250,.8); box-shadow:0 0 30px rgba(182,108,250,.5); }
+.email .e-txt { position:relative; min-height:1.2em; }
 </style>
 </head>
 <body>

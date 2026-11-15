@@ -52,8 +52,9 @@ carries an echo, so no effect is ever heard twice.
 
 ## "Meet Refract Tech" series
 
-Short business-focused reels (`series.html?ep=…`, `src/series.js`): a 12 s teaser that asks what
-Refract Tech is and says the website is launching soon, and one 14.5 s episode per stage that
+Short business-focused reels (`series.html?ep=…`, `src/series.js`): a 22 s teaser (the logo
+building itself, three questions, the three things we build one at a time, the website launching
+soon, an animated contact close; its own soundtrack in `scripts/teaser_music.py`), and one 14.5 s episode per stage that
 asks the viewer a question about their website or business, shows that stage's card, and ends on
 the email address. The cards come from `assets/cardArt-series.js`, the site's card art with the
 Connect card worded around bookings, payments and calendars.

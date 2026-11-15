@@ -3,8 +3,9 @@
 // business, shows that stage's card from the website, and ends on the email address.
 // Open series.html?ep=teaser | discover | design | build | connect | launch | evolve.
 import { ART_KEYS, CARD_H, CARD_W, loadCardAssets, paintCard } from '../assets/cardArt-series.js';
-import { bump, clamp, ease, h, look, prog, spring, tw } from './lib.js';
+import { bump, clamp, ease, h, look, prog, spring, track, tw } from './lib.js';
 import { C, ICON, Sky } from './ui.js';
+import { Hook } from './scenes.js';
 
 const EMAIL = 'refract@refract-tech.com';
 
@@ -161,38 +162,116 @@ function stageEpisode(hud, key, cards) {
   };
 }
 
-function teaser(hud) {
-  const DUR = 12.0;
+// ------------------------------------------------------------------ the teaser
+// The three things we build, each drawn as line art that draws itself in.
+const OFFERS = [
+  { title: ['Business', 'websites'], line: 'Fast, clear and built to bring you clients.',
+    art: `<rect x="20" y="34" width="200" height="150" rx="16"/><path d="M20 66h200"/><circle cx="40" cy="50" r="4"/><circle cx="54" cy="50" r="4"/><circle cx="68" cy="50" r="4"/>
+      <path d="M44 96h86M44 116h60M44 136h74"/><rect x="146" y="92" width="52" height="64" rx="8"/><path d="M44 160h40"/><path d="M168 150l26 32 8-14 16 4z"/>` },
+  { title: ['Booking and', 'management systems'], line: 'Bookings, payments and clients together.',
+    art: `<rect x="22" y="40" width="196" height="160" rx="16"/><path d="M22 80h196M66 24v32M174 24v32"/>
+      <path d="M52 108h20M100 108h20M148 108h20M52 138h20M148 138h20M52 168h20M100 168h20"/><rect x="92" y="126" width="36" height="28" rx="6"/><path d="M100 140l7 7 13-14"/>` },
+  { title: ['Custom SaaS', 'platforms'], line: 'Your own software, built to grow with you.',
+    art: `<rect x="18" y="30" width="204" height="170" rx="16"/><path d="M76 30v170"/><path d="M34 60h26M34 84h26M34 108h26"/>
+      <path d="M96 176V140M126 176V112M156 176V126M186 176V86"/><path d="M96 70h70M96 92h44"/><circle cx="196" cy="62" r="12"/>` },
+];
+function Offer(parent, o, i) {
+  const el = h('div', 'ocard', parent, `
+    <div class="o-top"><span>0${i + 1} / 03</span><span class="o-dots">${[0, 1, 2].map(k => `<i class="${k === i ? 'on' : ''}"></i>`).join('')}</span></div>
+    <div class="o-tile"><span class="o-glow"></span><svg viewBox="0 0 240 220" width="290" height="266" fill="none" stroke="url(#og${i})" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+      <defs><linearGradient id="og${i}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B66CFA"/><stop offset="1" stop-color="#FF906B"/></linearGradient></defs>${o.art}</svg></div>
+    <div class="o-title">${o.title.map(t => `<div class="o-row"><span>${t}</span></div>`).join('')}</div>
+    <div class="o-line">${o.line}</div><span class="o-sheen"></span>`);
+  const parts = [...el.querySelectorAll('svg > :not(defs)')];
+  parts.forEach(p => { p.setAttribute('pathLength', '1'); p.style.strokeDasharray = '1'; });
+  const tile = el.querySelector('.o-tile'), glow = el.querySelector('.o-glow'), rows = [...el.querySelectorAll('.o-row span')], line = el.querySelector('.o-line'), sheen = el.querySelector('.o-sheen');
+  return {
+    update(t, tin, tout) {
+      const on = t > tin - .05 && t < tout + .45; el.style.display = on ? '' : 'none'; if (!on) return;
+      const k = spring(t, tin, 1.3, .74), e = ease.inCubic(prog(t, tout - .05, tout + .4));
+      look(el, clamp(k * 2) * (1 - e), { x: (1 - k) * 760 - e * 760, ry: (1 - k) * -34 + e * 34, s: .92 + .08 * clamp(k) });
+      const tk = spring(t, tin + .12, 1.8, .5);
+      look(tile, 1, { s: .4 + .6 * tk, rz: (1 - tk) * -14 });
+      glow.style.opacity = (.55 + .45 * bump(t, tin + .3, tin + 1.0)).toFixed(3);
+      parts.forEach((p, j) => { p.style.strokeDashoffset = (1 - tw(t, tin + .2 + j * .045, tin + .65 + j * .045, ease.outCubic)).toFixed(3); });
+      rows.forEach((r, j) => { const a = tin + .3 + j * .1, q = ease.outExpo(prog(t, a, a + .7)); look(r, Math.min(1, q * 1.5), `translateY(${((1 - q) * 105).toFixed(1)}%)`, (1 - q) * 6); });
+      const lq = ease.outExpo(prog(t, tin + .55, tin + 1.1)); look(line, lq, `translateY(${((1 - lq) * 20).toFixed(1)}px)`);
+      look(sheen, bump(t, tin + .6, tin + 1.3), `translateX(${(-130 + prog(t, tin + .6, tin + 1.3) * 260).toFixed(1)}%) rotate(16deg)`);
+    },
+  };
+}
+
+/** The close: the logo builds, the words rise, the email unfolds and types itself, then light pulses out. */
+function Closing(parent, heading) {
+  const root = h('div', 'end', parent);
+  const pulses = [0, 1, 2].map(() => h('div', 'pulse', root));
+  const logo = Logo(root, 300);
+  const tip = h('div', 'ring-tip', root);
+  const head = Lines(root, heading, { y: 800, size: 104 });
+  const pill = h('div', 'email', root, `<span class="email-sheen"></span><i>${ICON.mail}</i><span class="e-txt"></span>`);
+  const icon = pill.querySelector('i'), txt = pill.querySelector('.e-txt'), pSheen = pill.querySelector('.email-sheen');
+  const soon = h('div', 'soon', root, `<b></b>refract-tech.com · launching soon`);
+  return {
+    update(t, tin) {
+      const on = t > tin - .05; root.style.display = on ? '' : 'none'; if (!on) return;
+      logo.update(t, tin, 99, 540, 560);
+      const ang = (-90 + 360 * tw(t, tin, tin + .9, ease.outCubic)) * Math.PI / 180;
+      look(tip, prog(t, tin, tin + .08) * (1 - prog(t, tin + .85, tin + 1.0)), `translate(${(540 + Math.cos(ang) * 140).toFixed(1)}px,${(560 + Math.sin(ang) * 140).toFixed(1)}px) translate(-50%,-50%)`);
+      head.update(t, tin + .25, 99);
+      // the email: a small round button that unfolds, then the address types itself out
+      const open = spring(t, tin + .75, 1.4, .72), full = txt.dataset.full || (txt.dataset.full = EMAIL);
+      const n = Math.round(prog(t, tin + 1.0, tin + 1.65) * full.length);
+      if (txt.textContent.length !== n) txt.textContent = full.slice(0, n);
+      look(pill, clamp(open * 3), `translate(540px,1135px) translate(-50%,-50%) scale(${(.4 + .6 * clamp(open)).toFixed(3)})`);
+      pill.style.maxWidth = (130 + 870 * tw(t, tin + .9, tin + 1.6, ease.inOutCubic)).toFixed(0) + 'px';
+      look(icon, 1, `rotate(${(-20 * Math.sin(Math.min(1, prog(t, tin + .75, tin + 1.2)) * Math.PI * 2)).toFixed(2)}deg)`);
+      pSheen.style.transform = `translateX(${(-160 + ((((t - tin - 1.8) % 1.6) + 1.6) % 1.6) / 1.6 * 520).toFixed(1)}%)`;
+      pSheen.style.opacity = t > tin + 1.8 ? '1' : '0';
+      const s = ease.outExpo(prog(t, tin + 1.5, tin + 2.0));
+      look(soon, s, `translate(540px,1268px) translate(-50%,-50%) translateY(${((1 - s) * 20).toFixed(1)}px)`);
+      // and light keeps rippling out of the logo
+      pulses.forEach((p, i) => { const u = (((t - tin - 1.6 - i * .55) % 1.65) + 1.65) % 1.65 / 1.65; const live = t > tin + 1.6 + i * .55; look(p, live ? (1 - u) * .7 : 0, `translate(540px,560px) translate(-50%,-50%) scale(${(.75 + u * 1.3).toFixed(3)})`); });
+    },
+  };
+}
+
+function teaser(hud, mark) {
+  const DUR = 22.0;
   hud.style.setProperty('--acc', C.purple);
-  const mark = Backdrop(hud, 'R');
-  const q1 = Lines(hud, ['Is your business', '*ready to grow online?*'], { y: 760 });
-  const q2 = Lines(hud, ['Curious what', '*Refract Tech* does?'], { y: 760 });
-  const what = h('div', 'ep-label', hud, 'What we build');
-  const OFFER = [['globe', 'Business websites'], ['calendar', 'Booking and management systems'], ['grid', 'Custom SaaS platforms']];
-  const pills = OFFER.map(([ic, s], i) => { const p = h('div', 'offer', hud, `<i>${ICON[ic]}</i><span>${s}</span>`); p.style.top = (680 + i * 200) + 'px'; return p; });
-  const logo = Logo(hud, 240);
+  const world = h('div', 'world', hud);
+  const intro = Hook(world, mark);
+  const bg = Backdrop(hud, 'R');
+  const Q = [
+    [Lines(hud, ['Is your business', '*ready to grow online?*'], { y: 760 }), 2.55, 4.7],
+    [Lines(hud, ['Does your website', '*bring you new clients?*'], { y: 760 }), 4.85, 6.95],
+    [Lines(hud, ['Curious what', '*Refract Tech* does?'], { y: 760 }), 7.1, 8.85],
+  ];
+  const what = h('div', 'ep-label', hud, 'What we build'); what.style.top = '400px';
+  const ITEMS = [9.15, 10.75, 12.35], offers = OFFERS.map((o, i) => Offer(hud, o, i));
+  const logo = Logo(hud, 260);
   const idea = Lines(hud, ['From idea', '*to a working product.*'], { y: 820 });
   const soon = Lines(hud, ['Our website is', '*launching soon.*'], { y: 600 });
   const site = h('div', 'site-pill', hud, `<span class="email-sheen"></span>refract-tech.com<em>Soon</em>`);
   const siteSheen = site.querySelector('.email-sheen');
-  const end = EndCard(hud, ["Can't wait?", "*Let's talk.*"]);
+  const end = Closing(hud, ["Can't wait?", "*Let's talk.*"]);
   return {
-    DUR,
-    events: { tick: [.2, 2.7, 5.0, 7.4, 9.0], chime: [10.65], key: 6 },
+    DUR, focus: t => intro.focus(t),
+    events: { lock: [intro.LOCK], tick: [2.55, 4.85, 7.1], riser: [[8.3, 9.05]], drop: [9.05], item: ITEMS, hit: [14.0], ding: [16.75], end: [18.8], key: 6 },
     update(t) {
-      mark.update(t, .1, 5.0);
-      q1.update(t, .2, 2.55); q2.update(t, 2.7, 4.85);
-      const wk = ease.outExpo(prog(t, 5.0, 5.6));
-      look(what, wk * (1 - prog(t, 7.0, 7.25)), `translateY(${((1 - wk) * 16).toFixed(1)}px)`);
-      what.style.top = '560px';
-      pills.forEach((p, i) => { const a = 5.15 + i * .28, k = ease.outExpo(prog(t, a, a + .7)), e = ease.inCubic(prog(t, 7.0 + i * .04, 7.3 + i * .04)); look(p, Math.min(1, k * 1.5) * (1 - e), `translateX(-50%) translateY(${((1 - k) * 60 - e * 40).toFixed(1)}px)`, (1 - k) * 6); });
-      logo.update(t, 7.4, 8.85, 540, 560);
-      idea.update(t, 7.55, 8.85);
-      soon.update(t, 9.0, 10.35);
-      const sk = ease.outExpo(prog(t, 9.35, 10.0));
-      look(site, sk * (1 - prog(t, 10.2, 10.4)), `translate(540px,1000px) translate(-50%,-50%) translateY(${((1 - sk) * 40).toFixed(1)}px)`);
-      siteSheen.style.transform = `translateX(${(-160 + prog(t, 9.6, 10.3) * 520).toFixed(1)}%)`;
-      end.update(t, 10.45);
+      intro.update(t);
+      bg.update(t, 7.1, 9.0);
+      Q.forEach(([q, a, b]) => q.update(t, a, b));
+      const wk = ease.outExpo(prog(t, 9.0, 9.6));
+      look(what, wk * (1 - prog(t, 13.75, 14.0)), `translateY(${((1 - wk) * 16).toFixed(1)}px)`);
+      what.style.letterSpacing = `${(.26 + (1 - wk) * .3).toFixed(3)}em`;
+      offers.forEach((o, i) => o.update(t, ITEMS[i], i < 2 ? ITEMS[i + 1] - .05 : 13.85));
+      logo.update(t, 14.0, 16.25, 540, 560);
+      idea.update(t, 14.15, 16.25);
+      soon.update(t, 16.4, 18.65);
+      const sk = spring(t, 16.75, 1.5, .62);
+      look(site, clamp(sk * 2) * (1 - prog(t, 18.45, 18.7)), `translate(540px,1000px) translate(-50%,-50%) scale(${(.75 + .25 * sk).toFixed(3)})`);
+      siteSheen.style.transform = `translateX(${(-160 + prog(t, 17.1, 17.9) * 520).toFixed(1)}%)`;
+      end.update(t, 18.8);
     },
   };
 }
@@ -210,10 +289,15 @@ const sky = Sky(document.getElementById('sky'));
 window.ready = (async () => {
   await document.fonts.ready;
   const hud = document.getElementById('hud');
-  const E = ep === 'teaser' ? teaser(hud) : stageEpisode(hud, ep, await paintCards());
+  const mark = new Image(); mark.src = 'assets/r-mark.png'; await mark.decode();
+  const E = ep === 'teaser' ? teaser(hud, mark) : stageEpisode(hud, ep, await paintCards());
   window.DURATION = E.DUR;
   window.EVENTS = { duration: E.DUR, ...E.events };
-  window.render = t => { sky.draw(t, 1, { x: 540, y: 980, r: 900, a: .32 + .08 * Math.sin(t * 1.1) }); E.update(t); };
+  window.render = t => {
+    const f = E.focus && E.focus(t);
+    sky.draw(t, f ? track(t, [[0, .1], [.5, .3], [1.3, .85], [2.6, 1]]) : 1, f || { x: 540, y: 980, r: 900, a: .32 + .08 * Math.sin(t * 1.1) });
+    E.update(t);
+  };
   await Promise.all([...document.images].map(i => (i.complete ? i.decode() : new Promise(r => { i.onload = r; i.onerror = r; }).then(() => i.decode())).catch(() => {})));
   window.render(0);
 })();
