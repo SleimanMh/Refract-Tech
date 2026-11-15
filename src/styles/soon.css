@@ -1,0 +1,92 @@
+/* The coming-soon page. Uses the site's tokens (applyPalette) and its night sky. */
+.soon-page { position: relative; min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; overflow: hidden; --px: 0; --py: 0; }
+.soon { position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 72px 20px 32px; }
+
+/* the logo: a ring that draws itself, three lights in orbit, the R breathing */
+.soon-logo { position: relative; width: 132px; height: 132px; display: grid; place-items: center; margin-bottom: 14px; animation: soon-rise .9s cubic-bezier(.2, .8, .2, 1) both; }
+.soon-logo::before { content: ""; position: absolute; inset: -46px; border-radius: 50%; background: radial-gradient(closest-side, rgba(182, 108, 250, .38), rgba(113, 61, 232, .12) 60%, transparent); animation: soon-glow 4s ease-in-out infinite; }
+.soon-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.soon-ring circle { fill: none; stroke: url(#soonRing); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 578; stroke-dashoffset: 578; animation: soon-draw 1.4s .25s cubic-bezier(.65, 0, .35, 1) forwards; }
+.soon-logo img { position: relative; width: 74px; animation: soon-pop .8s .7s cubic-bezier(.3, 1.5, .5, 1) both, soon-breathe 5s 1.6s ease-in-out infinite; }
+.soon-orbit { position: absolute; inset: -14px; animation: soon-spin 14s linear infinite; }
+.soon-orbit i { position: absolute; width: 9px; height: 9px; border-radius: 50%; left: 50%; top: 0; margin-left: -4.5px; background: var(--coral); box-shadow: 0 0 12px var(--coral); opacity: 0; animation: soon-fade .6s 1.5s forwards; }
+.soon-orbit i:nth-child(2) { top: auto; bottom: 14%; left: 8%; background: var(--gold); box-shadow: 0 0 12px var(--gold); width: 7px; height: 7px; }
+.soon-orbit i:nth-child(3) { top: 30%; left: auto; right: -2px; background: var(--lav); box-shadow: 0 0 12px var(--lav); width: 6px; height: 6px; }
+
+.soon-brand { font-size: 22px; font-weight: 500; letter-spacing: -.01em; margin: 0 0 30px; animation: soon-rise .8s .55s cubic-bezier(.2, .8, .2, 1) both; }
+.soon-brand b { font-weight: 500; color: var(--coral); }
+
+.soon-pill { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 22px; padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--ink-2); background: rgba(255, 255, 255, .05); box-shadow: inset 0 0 0 1px rgba(182, 108, 250, .35); animation: soon-rise .8s .75s cubic-bezier(.2, .8, .2, 1) both; }
+.soon-dot { position: relative; width: 8px; height: 8px; border-radius: 50%; background: var(--coral); }
+.soon-dot::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 1px solid var(--coral); animation: soon-ping 2s ease-out infinite; }
+
+.soon-title { margin: 0; font-size: clamp(44px, 9vw, 104px); font-weight: 400; line-height: 1.02; letter-spacing: -.04em; }
+.soon-title span { display: block; animation: soon-rise 1s cubic-bezier(.2, .8, .2, 1) both; }
+.soon-title .r1 { animation-delay: .9s; } .soon-title .r2 { animation-delay: 1.02s; }
+.soon-title em { font-style: normal; background: linear-gradient(90deg, var(--lav), var(--gold) 40%, var(--coral) 70%, var(--gold));
+  background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: soon-shine 6s 2s linear infinite; }
+
+.soon-lede { max-width: 580px; text-wrap: balance; margin: 24px 0 0; font-size: clamp(16px, 2.2vw, 19px); line-height: 1.6; color: var(--ink-2); animation: soon-rise .9s 1.2s cubic-bezier(.2, .8, .2, 1) both; }
+.soon-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; list-style: none; margin: 22px 0 0; padding: 0; animation: soon-rise .9s 1.32s cubic-bezier(.2, .8, .2, 1) both; }
+.soon-tags li { padding: 7px 14px; border-radius: 999px; font-size: 14px; color: var(--ink-2); background: rgba(255, 255, 255, .04); box-shadow: inset 0 0 0 1px rgba(247, 245, 255, .14); }
+
+.soon-cta { display: flex; align-items: center; gap: 8px; margin-top: 34px; padding: 6px; border-radius: 999px; background: rgba(27, 26, 64, .7); box-shadow: inset 0 0 0 1px rgba(182, 108, 250, .45), 0 20px 60px -20px rgba(113, 61, 232, .7);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); animation: soon-rise .9s 1.45s cubic-bezier(.2, .8, .2, 1) both; max-width: 100%; }
+.soon-mail { position: relative; display: inline-flex; align-items: center; gap: 12px; padding: 14px 22px; border-radius: 999px; overflow: hidden; color: var(--ink); text-decoration: none; font-size: clamp(15px, 2.4vw, 18px); font-weight: 500;
+  background: linear-gradient(90deg, rgba(113, 61, 232, .55), rgba(182, 108, 250, .4) 50%, rgba(255, 144, 107, .45)); min-width: 0; }
+.soon-mail span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.soon-mail svg { width: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.soon-mail::after { content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .35), transparent); animation: soon-sweep 3.6s 2.4s ease-in-out infinite; }
+.soon-mail:hover, .soon-mail:focus-visible { filter: brightness(1.12); }
+.soon-copy { flex: none; padding: 14px 18px; border: 0; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 500; color: var(--ink-2); background: transparent; cursor: pointer; }
+.soon-copy:hover, .soon-copy:focus-visible { color: var(--ink); background: rgba(255, 255, 255, .06); }
+.soon-hint { margin: 14px 0 0; font-size: 14px; color: var(--ink-3); animation: soon-rise .9s 1.55s cubic-bezier(.2, .8, .2, 1) both; }
+
+.soon-foot { position: relative; z-index: 2; padding: 18px 20px 26px; text-align: center; font-size: 13px; color: var(--ink-3); }
+.soon-foot a { color: var(--ink-2); text-decoration: none; } .soon-foot a:hover { color: var(--ink); }
+
+/* the stage cards drifting behind */
+.soon-cards { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.soon-card { position: absolute; width: 180px; height: 260px; padding: 18px; border-radius: 22px; opacity: 0;
+  background: linear-gradient(160deg, rgba(42, 36, 96, .55), rgba(19, 17, 48, .45)); box-shadow: inset 0 0 0 1px rgba(182, 108, 250, .35), 0 30px 60px -30px #000;
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); animation: soon-card-in 1.2s forwards, soon-float 9s ease-in-out infinite; }
+.soon-card.c0 { left: 7%; top: 18%; --r: -10deg; --d: 1; animation-delay: 1.6s, 0s; }
+.soon-card.c1 { right: 8%; top: 14%; --r: 8deg; --d: -1.4; animation-delay: 1.8s, -3s; }
+.soon-card.c2 { right: 12%; bottom: 12%; --r: -6deg; --d: .8; width: 150px; height: 216px; animation-delay: 2s, -6s; }
+.soon-card { transform: translate(calc(var(--px) * 28px * var(--d)), calc(var(--py) * 22px * var(--d))) rotate(var(--r)); }
+.sc-k { display: block; font-size: 10px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 16px; }
+.sc-l { display: block; height: 7px; border-radius: 4px; background: rgba(247, 245, 255, .16); margin-bottom: 9px; }
+.sc-l.l1 { width: 80%; background: rgba(247, 245, 255, .32); } .sc-l.l2 { width: 60%; background: linear-gradient(90deg, var(--gold), transparent); } .sc-l.l3 { width: 70%; }
+.sc-flow { position: absolute; left: 18px; right: 18px; bottom: 22px; display: flex; justify-content: space-between; align-items: center; }
+.sc-flow::before { content: ""; position: absolute; left: 0; right: 0; height: 1px; background: rgba(247, 245, 255, .2); }
+.sc-flow b { position: relative; width: 10px; height: 10px; border-radius: 50%; background: var(--lav); }
+.sc-flow b:nth-child(2) { background: var(--gold); } .sc-flow b:nth-child(3) { background: var(--coral); }
+
+@media (max-width: 760px) {
+  .soon-card { width: 120px; height: 172px; padding: 12px; border-radius: 16px; }
+  .soon-card.c0 { left: -30px; top: 9%; } .soon-card.c1 { right: -36px; top: 6%; } .soon-card.c2 { display: none; }
+  .soon-card { opacity: .5 !important; }
+  .sc-k { font-size: 8px; margin-bottom: 10px; }
+  .soon-cta { flex-direction: column; border-radius: 28px; width: 100%; max-width: 360px; }
+  .soon-mail { width: 100%; justify-content: center; }
+  .soon-copy { padding: 10px 18px; }
+}
+
+@keyframes soon-rise { from { opacity: 0; transform: translateY(18px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes soon-draw { to { stroke-dashoffset: 0; } }
+@keyframes soon-pop { from { opacity: 0; transform: scale(.6) rotate(-12deg); } to { opacity: 1; transform: none; } }
+@keyframes soon-breathe { 50% { transform: scale(1.05); } }
+@keyframes soon-spin { to { transform: rotate(360deg); } }
+@keyframes soon-fade { to { opacity: 1; } }
+@keyframes soon-glow { 50% { opacity: .65; transform: scale(1.08); } }
+@keyframes soon-ping { from { transform: scale(.6); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
+@keyframes soon-shine { to { background-position: -200% 0; } }
+@keyframes soon-sweep { 0% { left: -60%; } 55%, 100% { left: 130%; } }
+@keyframes soon-card-in { from { opacity: 0; } to { opacity: .85; } }
+@keyframes soon-float { 50% { translate: 0 -12px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .soon-page *, .soon-page *::before, .soon-page *::after { animation-duration: .01ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; }
+  .soon-ring circle { stroke-dashoffset: 0; }
+}
