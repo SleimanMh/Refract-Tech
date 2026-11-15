@@ -63,3 +63,16 @@ Connect card worded around bookings, payments and calendars.
 bash scripts/series.sh                  # all seven → out/series/<ep>/Refract-Tech-<n>-<ep>.mp4
 bash scripts/series.sh discover build   # just those
 ```
+
+## The Padel Lounge × Refract Tech (case study)
+
+`series.html?ep=padel`: a 24 s reel on the website Refract Tech built for The Padel Lounge
+(tplrachaya.com): the two logos meeting, the real site in a phone under floodlights, the booking
+flow acted out (length, day, request, confirmation bell), the venue's features with its own photos,
+the "Built by refract" credit, and the contact close. Soundtrack: `scripts/padel_music.py`.
+
+```bash
+npm run capture-padel                                                     # → assets/padel/
+node scripts/render.js --page "series.html?ep=padel" --out out/series/padel --scale 2 --quality 96
+python3 scripts/padel_music.py out/series/padel
+```

@@ -382,6 +382,165 @@ function discoverReel(hud, mark, cards) {
   };
 }
 
+// ------------------------------------------------------------------ The Padel Lounge × Refract Tech
+// A case study: the website Refract Tech designed and built for The Padel Lounge (tplrachaya.com).
+// Its real pages, logo and venue photos, with the booking flow acted out on screen.
+const PAD = { orange: '#C96A17', cream: '#F4F1EC', navy: '#0B1526', blue: '#2647A6', lime: '#D8EA48' };
+
+/** A finger tap: a soft dot that glides between points and presses. */
+function Touch(parent) {
+  const el = h('div', 'touch', parent), ring = h('div', 'touch-ring', parent);
+  return {
+    update(t, path, taps) {
+      if (!path || t < path[0][0] || t > path[path.length - 1][0]) { el.style.display = ring.style.display = 'none'; return; }
+      el.style.display = ring.style.display = '';
+      const [x, y, o] = track(t, path.map(([tt, ...v]) => [tt, v, ease.inOutCubic]));
+      let press = 0, r = -1, rp = [x, y];
+      for (const c of taps) { press = Math.max(press, bump(t, c - .06, c + .16)); if (t >= c && t < c + .45) { r = prog(t, c, c + .45); rp = track(c, path.map(([tt, ...v]) => [tt, v, ease.inOutCubic])); } }
+      look(el, o, `translate(${x.toFixed(1)}px,${y.toFixed(1)}px) translate(-50%,-50%) scale(${(1 - .25 * press).toFixed(3)})`);
+      look(ring, r < 0 ? 0 : (1 - r) * o, `translate(${rp[0].toFixed(1)}px,${rp[1].toFixed(1)}px) translate(-50%,-50%) scale(${(.4 + 1.4 * Math.max(r, 0)).toFixed(3)})`);
+    },
+  };
+}
+
+function padelReel(hud, mark) {
+  const DUR = 24.0;
+  hud.style.setProperty('--acc', C.purple);
+  const world = h('div', 'world', hud);
+  const intro = Hook(world, mark);
+
+  // ---- 1 · the collaboration
+  const caseLbl = h('div', 'ep-label', hud, 'Case study'); caseLbl.style.top = '470px';
+  const rl = Logo(hud, 250);
+  const tpl = h('div', 'tpl-mark', hud, `<img src="assets/padel/tpl-mark.png">`);
+  const cross = h('div', 'cross', hud, `<svg viewBox="0 0 100 100" width="90" height="90"><path id="x1" d="M20 20L80 80" pathLength="1"/><path id="x2" d="M80 20L20 80" pathLength="1"/></svg>`);
+  const x1 = cross.querySelector('#x1'), x2 = cross.querySelector('#x2');
+  const collab = Lines(hud, ['Refract Tech ×', '*The Padel Lounge*'], { y: 1050, size: 92 });
+  const sub = h('div', 'soon', hud, `<b></b>Website design &amp; development`);
+
+  // ---- 2 · the question
+  const q = Lines(hud, ['What if booking a court', '*took ten seconds?*'], { y: 760 });
+
+  // ---- 3 · the website itself, in a phone, under the floodlights
+  const meet = Lines(hud, ['Meet', '*The Padel Lounge.*'], { y: 250, size: 84 });
+  // the home page section by section (each captured once it had animated in)
+  const phone = h('div', 'pphone', hud, `<div class="pscr"><div class="pstrip">${['home-hero', 'home-court', 'home-experience', 'home-gallery', 'home-pricing'].map(n => `<img src="assets/padel/${n}.png">`).join('')}</div></div><span class="pnotch"></span>`);
+  const page = phone.querySelector('.pstrip'), SEC = 548 * 2532 / 1170;
+  const url = h('div', 'purl', hud, `${ICON.lock}<span>tplrachaya.com</span>`);
+  const beams = [0, 1].map(i => h('div', 'beam beam' + i, hud));
+
+  // ---- 4 · booking in three taps, acted out in the site's own style
+  const bookH = Lines(hud, ['Booking in', '*three taps.*'], { y: 250, size: 84 });
+  const DUR_CH = [['1 hour', '$20', '$15'], ['1.5 hours', '$25', '$20'], ['2 hours', '$30', '$25']];
+  const DAYS = [['Today', 26], ['Fri', 27], ['Sat', 28], ['Sun', 29], ['Mon', 30]];
+  const book = h('div', 'pbook', hud, `
+    <div class="pb-top"><div><div class="pb-k">Book</div><div class="pb-h">Take the court</div></div><div class="pb-bell">${ICON.bell}<b>1</b></div></div>
+    <div class="pb-k">How long?</div>
+    <div class="pb-chips">${DUR_CH.map(([l, r, hh], i) => `<div class="pb-chip" id="pc${i}"><b>${l}</b><span>${r} regular</span><span class="hh">Happy ${hh}</span></div>`).join('')}</div>
+    <div class="pb-price"><span class="pb-old">$25</span><span class="pb-now">$25</span><span class="pb-tag">Happy hour applied</span></div>
+    <div class="pb-k">Which day?</div>
+    <div class="pb-days">${DAYS.map(([d, n], i) => `<div class="pb-day" id="pd${i}"><small>${d}</small><b>${n}</b></div>`).join('')}</div>
+    <div class="pb-btn"><span class="b1">Request the court</span><span class="b2"><i class="spin"></i>Awaiting confirmation</span></div>
+    <div class="pb-note">Pay at the venue when you arrive.</div>
+    <div class="pb-toast"><i>${ICON.check}</i><div><b>Booking confirmed</b><span>Fri 27 · 1.5 hours · $20</span></div></div>`);
+  const $b = sel => book.querySelector(sel);
+  const chips = [0, 1, 2].map(i => $b('#pc' + i)), days = [0, 1, 2, 3, 4].map(i => $b('#pd' + i));
+  const old = $b('.pb-old'), now = $b('.pb-now'), tag = $b('.pb-tag'), b1 = $b('.b1'), b2 = $b('.b2'), bell = $b('.pb-bell'), badge = bell.querySelector('b'), toast = $b('.pb-toast'), btn = $b('.pb-btn');
+  const touch = Touch(hud);
+
+  // ---- 5 · what the site shows off, one at a time
+  const featL = h('div', 'ep-label', hud, 'Built for the venue'); featL.style.top = '400px';
+  const FEAT = [
+    ['02-courtside-branding-beside-the-blue-court.jpg', ['Full panoramic', 'glass court'], 'Glass on every side, built to tournament spec.'],
+    ['01-floodlit-entrance-with-neon-tpl-sign.jpg', ['Floodlit', 'until 3 AM'], '8 × 200W LED. Play under the lights.'],
+    [null, ['Rewards that', 'bring players back'], 'Play 5 hours, unlock free court time.'],
+  ];
+  const feats = FEAT.map(([img, title, line], i) => {
+    const el = h('div', 'pfeat', hud, `<div class="pf-pic">${img ? `<img src="assets/padel/${img}">` : `<svg viewBox="0 0 300 300" width="300" height="300"><circle cx="150" cy="150" r="118" stroke="rgba(247,245,255,.12)" stroke-width="22" fill="none"/><circle class="pf-ring" cx="150" cy="150" r="118" stroke="${PAD.lime}" stroke-width="22" fill="none" stroke-linecap="round" transform="rotate(-90 150 150)" stroke-dasharray="741.4"/><text x="150" y="150" text-anchor="middle" fill="#F7F5FF" font-size="86" font-weight="600" font-family="Albert Sans">5h</text><text x="150" y="196" text-anchor="middle" fill="${PAD.lime}" font-size="26" font-weight="600" font-family="Albert Sans" letter-spacing="3">FREE COURT</text></svg>`}<span class="pf-n">0${i + 1} / 03</span></div>
+      <div class="pf-t">${title.map((t, j) => `<div class="o-row"><span${j ? ' class="lime"' : ''}>${t}</span></div>`).join('')}</div><div class="pf-l">${line}</div>`);
+    return { el, img: el.querySelector('img'), ring: el.querySelector('.pf-ring'), rows: [...el.querySelectorAll('.o-row span')], line: el.querySelector('.pf-l') };
+  });
+
+  // ---- 6 · built by Refract
+  const built = Lines(hud, ['Designed and built by', '*Refract Tech.*'], { y: 690 });
+  const badgeR = h('div', 'pbuilt', hud, `<span>Built by</span><img src="assets/padel/refract.png">`);
+  const live = h('div', 'site-pill', hud, `<span class="email-sheen"></span>tplrachaya.com<em class="live"><b></b>Live</em>`);
+  const liveSheen = live.querySelector('.email-sheen');
+
+  const end = Closing(hud, ['Want a website like this?', "*Let's talk.*"]);
+  const T = { collab: 2.6, q: 4.9, site: 7.0, book: 10.0, feat: 13.7, built: 18.5, end: 20.4 };
+  const TAPS = [10.65, 11.65, 12.2];
+  const FEAT_AT = [13.8, 15.35, 16.9];
+  return {
+    DUR, focus: t => intro.focus(t),
+    events: { lock: [intro.LOCK], collab: [3.25], tick: [T.q], ball: [6.95, 9.95, 18.45], tap: TAPS, bell: [12.85], item: FEAT_AT, end: [T.end] },
+    update(t) {
+      intro.update(t);
+      // the collaboration: the two marks meet, an × draws between them
+      const cIn = spring(t, 2.65, 1.3, .7), cOut = ease.inCubic(prog(t, 4.6, 4.9));
+      const lk = ease.outExpo(prog(t, 2.7, 3.2));
+      look(caseLbl, lk * (1 - cOut), `translateY(${((1 - lk) * 16).toFixed(1)}px)`);
+      rl.update(t, 2.65, 4.85, lerp(-200, 300, clamp(cIn)) - cOut * 300, 800);
+      look(tpl, clamp(cIn * 2) * (1 - cOut), `translate(${(lerp(1280, 780, clamp(cIn)) + cOut * 300).toFixed(1)}px,800px) translate(-50%,-50%) rotate(${((1 - clamp(cIn)) * 90).toFixed(1)}deg)`);
+      look(cross, prog(t, 3.1, 3.2) * (1 - cOut), `translate(540px,800px) translate(-50%,-50%) scale(${(1 + .25 * bump(t, 3.2, 3.6)).toFixed(3)})`);
+      x1.style.strokeDashoffset = (1 - tw(t, 3.1, 3.3)).toFixed(3); x2.style.strokeDashoffset = (1 - tw(t, 3.2, 3.4)).toFixed(3);
+      collab.update(t, 3.3, 4.8);
+      const sk = ease.outExpo(prog(t, 3.7, 4.2));
+      look(sub, sk * (1 - cOut), `translate(540px,1300px) translate(-50%,-50%) translateY(${((1 - sk) * 20).toFixed(1)}px)`);
+      // the question
+      q.update(t, T.q, 6.85);
+      // the website, scrolling under floodlights
+      meet.update(t, 7.05, 9.85);
+      const pk = spring(t, 7.0, 1.2, .75), po = ease.inCubic(prog(t, 9.7, 10.05));
+      look(phone, clamp(pk * 2) * (1 - po), { y: (1 - pk) * 500 - po * 80, rx: (1 - clamp(pk)) * 20, ry: Math.sin(t * 1.2) * 4, s: (.9 + .1 * clamp(pk)) * (1 - .05 * po) });
+      page.style.transform = `translateY(${(-track(t, [[7.85, 0], [8.45, SEC, ease.inOutCubic], [8.75, SEC], [9.45, SEC * 3, ease.inOutCubic]])).toFixed(1)}px)`;
+      look(url, prog(t, 7.3, 7.6) * (1 - po), `translate(540px,486px) translate(-50%,-50%)`);
+      beams.forEach((bm, i) => { const u = prog(t, 7.15 + i * .15, 8.6 + i * .15); look(bm, Math.sin(Math.PI * u) * .9, `rotate(${(i ? 1 : -1) * (35 - 50 * ease.inOutSine(u))}deg)`); });
+      // booking
+      bookH.update(t, T.book + .05, 13.55);
+      const bk = spring(t, T.book, 1.25, .75), bo = ease.inCubic(prog(t, 13.45, 13.8));
+      look(book, clamp(bk * 2) * (1 - bo), { y: (1 - bk) * 420 - bo * 80, rx: (1 - clamp(bk)) * 14, s: .92 + .08 * clamp(bk) });
+      chips.forEach((c, i) => c.classList.toggle('on', i === 1 && t >= TAPS[0]));
+      const pr = t < 10.95 ? 25 : Math.round(lerp(25, 20, tw(t, 10.95, 11.35)));
+      now.textContent = '$' + pr; look(old, prog(t, 10.95, 11.1)); look(tag, prog(t, 11.2, 11.4), `scale(${(.8 + .2 * ease.outBack(prog(t, 11.2, 11.5))).toFixed(3)})`);
+      days.forEach((d, i) => d.classList.toggle('on', i === 1 && t >= TAPS[1]));
+      btn.classList.toggle('pressed', t >= TAPS[2]);
+      look(b1, 1 - prog(t, TAPS[2], TAPS[2] + .12)); look(b2, prog(t, TAPS[2] + .08, TAPS[2] + .2));
+      b2.querySelector('.spin').style.transform = `rotate(${(t * 520) % 360}deg)`;
+      const rg = bump(t, 12.85, 13.4);
+      bell.style.transform = `rotate(${(Math.sin((t - 12.85) * 40) * 18 * rg).toFixed(2)}deg)`;
+      look(badge, prog(t, 12.85, 12.95), `scale(${ease.outBack(prog(t, 12.85, 13.1)).toFixed(3)})`);
+      const tk = spring(t, 12.9, 1.6, .62);
+      look(toast, clamp(tk * 2), `translateY(${((1 - tk) * -120).toFixed(1)}px)`);
+      // the finger lands on the real controls: measured from the card's own layout
+      if (!book.dataset.m) { book.dataset.m = 1; const c = el => [110 + el.offsetLeft + el.offsetWidth / 2, 520 + el.offsetTop + el.offsetHeight / 2]; book._pts = [c(chips[1]), c(days[1]), c(btn)]; }
+      const [P1, P2, P3] = book._pts;
+      touch.update(t, [[10.3, 980, 1700, 0], [10.55, ...P1, 1], [10.7, ...P1, 1], [11.5, ...P2, 1], [11.75, ...P2, 1], [12.05, ...P3, 1], [12.35, ...P3, 1], [12.6, 760, 1650, 0]], TAPS);
+      // the venue, one feature at a time
+      const fl = ease.outExpo(prog(t, T.feat, T.feat + .5));
+      look(featL, fl * (1 - prog(t, 18.2, 18.45)), `translateY(${((1 - fl) * 16).toFixed(1)}px)`);
+      feats.forEach((f, i) => {
+        const a = FEAT_AT[i], b = i < 2 ? FEAT_AT[i + 1] - .05 : 18.35;
+        const on = t > a - .05 && t < b + .45; f.el.style.display = on ? '' : 'none'; if (!on) return;
+        const k = spring(t, a, 1.3, .74), e = ease.inCubic(prog(t, b - .05, b + .4));
+        look(f.el, clamp(k * 2) * (1 - e), { x: (1 - k) * 760 - e * 760, ry: (1 - k) * -34 + e * 34, s: .92 + .08 * clamp(k) });
+        if (f.img) f.img.style.transform = `scale(${(1.12 - .1 * prog(t, a, b + .4)).toFixed(4)}) translateX(${(-12 * prog(t, a, b)).toFixed(1)}px)`;
+        if (f.ring) f.ring.style.strokeDashoffset = (741.4 * (1 - tw(t, a + .3, a + 1.2, ease.outCubic))).toFixed(1);
+        f.rows.forEach((r, j) => { const s0 = a + .3 + j * .1, qq = ease.outExpo(prog(t, s0, s0 + .7)); look(r, Math.min(1, qq * 1.5), `translateY(${((1 - qq) * 105).toFixed(1)}%)`, (1 - qq) * 6); });
+        const lq = ease.outExpo(prog(t, a + .55, a + 1.1)); look(f.line, lq, `translateY(${((1 - lq) * 20).toFixed(1)}px)`);
+      });
+      // built by Refract, with the credit from the site's own footer
+      built.update(t, T.built, 20.25);
+      const bb = ease.outExpo(prog(t, 18.9, 19.5)), bOut = prog(t, 20.05, 20.3);
+      look(badgeR, bb * (1 - bOut), `translate(540px,1000px) translate(-50%,-50%) translateY(${((1 - bb) * 30).toFixed(1)}px)`);
+      const lv = spring(t, 19.2, 1.5, .62);
+      look(live, clamp(lv * 2) * (1 - bOut), `translate(540px,1160px) translate(-50%,-50%) scale(${(.8 + .2 * lv).toFixed(3)})`);
+      liveSheen.style.transform = `translateX(${(-160 + prog(t, 19.5, 20.2) * 520).toFixed(1)}%)`;
+      end.update(t, T.end);
+    },
+  };
+}
+
 // ------------------------------------------------------------------ build and render
 async function paintCards() {
   const logo = await loadCardAssets();
@@ -396,7 +555,7 @@ window.ready = (async () => {
   await document.fonts.ready;
   const hud = document.getElementById('hud');
   const mark = new Image(); mark.src = 'assets/r-mark.png'; await mark.decode();
-  const E = ep === 'teaser' ? teaser(hud, mark) : ep === 'discover' ? discoverReel(hud, mark, await paintCards()) : stageEpisode(hud, ep, await paintCards());
+  const E = ep === 'teaser' ? teaser(hud, mark) : ep === 'discover' ? discoverReel(hud, mark, await paintCards()) : ep === 'padel' ? padelReel(hud, mark) : stageEpisode(hud, ep, await paintCards());
   window.DURATION = E.DUR;
   window.EVENTS = { duration: E.DUR, ...E.events };
   window.render = t => {

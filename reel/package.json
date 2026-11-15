@@ -4,6 +4,7 @@
   "type": "commonjs",
   "scripts": {
     "capture": "node scripts/capture-site.js",
+    "capture-padel": "node scripts/capture-padel.js",
     "music": "python3 scripts/music.py",
     "render": "node scripts/render.js",
     "encode": "bash scripts/encode.sh"
