@@ -4,8 +4,10 @@
 // Options: --samples N (default 3), --workers N (default 3), --from F --to F (frame range)
 const { chromium } = require('playwright');
 const http = require('http'), fs = require('fs'), path = require('path');
-const ROOT = path.join(__dirname, '..'), OUT = path.join(ROOT, 'out'), FPS = 30;
+const ROOT = path.join(__dirname, '..'), FPS = 30;
 const args = process.argv.slice(2), opt = (k, d) => { const i = args.indexOf('--' + k); return i < 0 ? d : args[i + 1]; };
+// --page series.html?ep=discover renders another page; --out sets where frames and the cue sheet go
+const PAGE = opt('page', 'index.html'), OUT = path.resolve(ROOT, opt('out', 'out'));
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.json': 'application/json' };
 const server = http.createServer((q, s) => {
   const f = path.join(ROOT, decodeURIComponent(q.url.split('?')[0]));
@@ -16,7 +18,7 @@ async function page(browser) {
   const p = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
   p.on('pageerror', e => console.error('pageerror', e.message));
   p.on('console', m => { if (m.type() === 'error') console.error('console', m.text()); });
-  await p.goto('http://localhost:4191/index.html', { waitUntil: 'networkidle' });
+  await p.goto('http://localhost:4191/' + PAGE, { waitUntil: 'networkidle' });
   await p.evaluate(() => window.ready);
   return p;
 }
@@ -24,7 +26,7 @@ async function page(browser) {
   await new Promise(r => server.listen(4191, r));
   const si = args.indexOf('--stills');
   if (si >= 0) {
-    const times = args.slice(si + 1).filter(a => !a.startsWith('--')).map(Number);
+    const times = args.slice(si + 1).filter(a => /^[0-9.]+$/.test(a)).map(Number);
     fs.mkdirSync(path.join(OUT, 'stills'), { recursive: true });
     const b = await chromium.launch(); const p = await page(b);
     for (const t of times) { await p.evaluate(t => window.render(t), t); await p.screenshot({ path: path.join(OUT, 'stills', `t${t.toFixed(2)}.png`) }); }

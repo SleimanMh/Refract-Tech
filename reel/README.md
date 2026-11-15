@@ -49,3 +49,16 @@ the scene clock is held (`HOLD` for the cards). The service-card carousel (`Work
 
 The soundtrack plays one sound per event (see the cue sheet in `src/main.js`); only the music
 carries an echo, so no effect is ever heard twice.
+
+## "Meet Refract Tech" series
+
+Short business-focused reels (`series.html?ep=…`, `src/series.js`): a 12 s teaser that asks what
+Refract Tech is and says the website is launching soon, and one 14.5 s episode per stage that
+asks the viewer a question about their website or business, shows that stage's card, and ends on
+the email address. The cards come from `assets/cardArt-series.js`, the site's card art with the
+Connect card worded around bookings, payments and calendars.
+
+```bash
+bash scripts/series.sh                  # all seven → out/series/<ep>/Refract-Tech-<n>-<ep>.mp4
+bash scripts/series.sh discover build   # just those
+```
