@@ -31,5 +31,6 @@ const W = 390, H = 844;
   const sp = await b.newPage({ viewport: { width: 1000, height: 1000 } });
   await sp.setContent(`<html><body style="margin:0;background:transparent">${svg}</body></html>`); await sp.waitForTimeout(400);
   await sp.screenshot({ path: path.join(OUT, 'tpl-mark.png'), omitBackground: true }); console.log('saved tpl-mark.png');
+  require('child_process').execFileSync('python3', ['-I', path.join(__dirname, 'center_logo.py'), path.join(OUT, 'tpl-mark.png'), path.join(OUT, 'tpl-mark-centered.png'), '.04']);
   await b.close();
 })();

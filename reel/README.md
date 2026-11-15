@@ -66,15 +66,17 @@ bash scripts/series.sh discover build   # just those
 
 ## The Padel Lounge × Refract Tech (case study)
 
-`series.html?ep=padel`: a 24 s reel on the website Refract Tech built for The Padel Lounge
+`series.html?ep=padel` (v2; the first cut is `?ep=padel-v1`): a 31.5 s reel on the website Refract Tech built for The Padel Lounge
 (tplrachaya.com): the two logos meeting, the real site in a phone under floodlights, the booking
 flow acted out (length, day, request, confirmation bell), the venue's features with its own photos,
-the "Built by refract" credit, and the contact close. Soundtrack: `scripts/padel_music.py`.
+the venue's admin dashboard (rebuilt from the site's own code: requests, schedule, rewards ladder),
+the "Built by refract" credit, and the receding-wall close. A padel ball, racket and court carry the
+cuts. Soundtrack: `scripts/padel_music2.py` (Latin house, plucked guitar, ball pocks in the groove).
 
 ```bash
 npm run capture-padel                                                     # → assets/padel/
 node scripts/render.js --page "series.html?ep=padel" --out out/series/padel --scale 2 --quality 96
-python3 scripts/padel_music.py out/series/padel
+python3 scripts/padel_music2.py out/series/padel2   # render with --out out/series/padel2
 ```
 
 ## 60 Days Challenge × Refract Tech (case study)

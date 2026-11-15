@@ -3,7 +3,7 @@
 // business, shows that stage's card from the website, and ends on the email address.
 // Open series.html?ep=teaser | discover | design | build | connect | launch | evolve.
 import { ART_KEYS, CARD_H, CARD_W, loadCardAssets, paintCard } from '../assets/cardArt-series.js';
-import { bump, clamp, ease, h, lerp, look, prog, spring, track, tw } from './lib.js';
+import { box, bump, clamp, ease, h, lerp, look, prog, spring, track, tw } from './lib.js';
 import { C, ICON, Sky } from './ui.js';
 import { Hook } from './scenes.js';
 
@@ -560,6 +560,7 @@ function Finale(parent, tiles, heading) {
   const soon = h('div', 'soon', root, `<b></b>refract-tech.com · launching soon`);
   const veil = h('div', 'fin-veil', root);
   return {
+    root,
     update(t, tin, tout) {
       const on = t > tin - .05; root.style.display = on ? '' : 'none'; if (!on) return;
       // the wall: tiles land in a grid, tilt back and recede while a light opens behind them
@@ -692,6 +693,286 @@ function challengeReel(hud, mark) {
   };
 }
 
+// ------------------------------------------------------------------ The Padel Lounge × Refract Tech, v2
+// Longer and smoother: straight into the collaboration over a court drawing itself, a padel ball
+// and racket that carry the cuts, the site and its booking flow, the venue's admin dashboard
+// (rebuilt from the site's own code: requests, the day's schedule, the rewards ladder), the venue,
+// and the receding-wall close.
+const BALL = `<svg viewBox="0 0 100 100" width="96" height="96"><defs><radialGradient id="bg1" cx=".38" cy=".32" r=".7"><stop offset="0" stop-color="#F8FF9E"/><stop offset=".55" stop-color="#D8EA48"/><stop offset="1" stop-color="#9DB21E"/></radialGradient></defs>
+  <circle cx="50" cy="50" r="46" fill="url(#bg1)"/><path d="M12 30C34 40 34 60 12 72M88 28C66 40 66 60 88 70" stroke="#FFFFF0" stroke-width="5" fill="none" stroke-linecap="round" opacity=".9"/></svg>`;
+const RACKET = `<svg viewBox="0 0 220 420" width="220" height="420"><defs><linearGradient id="rk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F2A04A"/><stop offset=".5" stop-color="#E8822C"/><stop offset="1" stop-color="#8F4A0E"/></linearGradient></defs>
+  <path d="M110 8C170 8 210 52 210 112C210 176 170 232 132 252L126 300H94L88 252C50 232 10 176 10 112C10 52 50 8 110 8Z" fill="url(#rk)"/>
+  <path d="M110 22C162 22 196 60 196 112C196 168 162 218 110 236C58 218 24 168 24 112C24 60 58 22 110 22Z" fill="none" stroke="#FFD9A8" stroke-width="3" opacity=".55"/>
+  ${Array.from({ length: 26 }, (_, i) => { const r = Math.floor(i / 5), c = i % 5; const x = 54 + c * 28 + (r % 2) * 14, y = 64 + r * 30; return x < 176 ? `<circle cx="${x}" cy="${y}" r="7" fill="#3a1d05" opacity=".75"/>` : ''; }).join('')}
+  <rect x="92" y="296" width="36" height="118" rx="12" fill="#1a1410"/>${[0, 1, 2, 3, 4].map(i => `<path d="M92 ${312 + i * 20}L128 ${304 + i * 20}" stroke="#E8822C" stroke-width="5"/>`).join('')}</svg>`;
+
+/** A padel ball with a short motion trail; pose(t) gives {x, y, s, o} or null. */
+function Ball(parent) {
+  const ghosts = [5, 4, 3, 2, 1].map(k => { const g = h('div', 'ball ghost', parent, BALL); g.dataset.k = k; return g; });
+  const el = h('div', 'ball', parent, BALL);
+  return {
+    update(t, pose) {
+      const show = (g, p, o) => { if (!p) { g.style.display = 'none'; return; } g.style.display = ''; look(g, (p.o ?? 1) * o, `translate(${p.x.toFixed(1)}px,${p.y.toFixed(1)}px) translate(-50%,-50%) rotate(${((p.r ?? t * 720) % 360).toFixed(1)}deg) scale(${(p.s ?? 1).toFixed(3)})`); };
+      show(el, pose(t), 1);
+      ghosts.forEach(g => { const k = +g.dataset.k; show(g, pose(t - k * .022), .32 - k * .055); });
+    },
+  };
+}
+/** The racket, swinging about its handle. */
+function Racket(parent) {
+  const el = h('div', 'racket', parent, RACKET);
+  return { update(t, p) { if (!p) { el.style.display = 'none'; return; } el.style.display = ''; look(el, p.o ?? 1, `translate(${p.x}px,${p.y}px) translate(-50%,-90%) rotate(${p.r.toFixed(2)}deg) scale(${(p.s ?? 1).toFixed(3)})`); } };
+}
+/** A padel court seen from above, its lines drawing themselves. */
+function Court(parent) {
+  const el = h('div', 'court', parent, `<svg viewBox="0 0 400 800" width="760" height="1520" fill="none" stroke="#F7F5FF" stroke-width="4" stroke-linecap="round">
+    <rect class="cl" x="20" y="20" width="360" height="760" pathLength="1"/><path class="cl" d="M20 400H380" pathLength="1" stroke-width="7" stroke="#D8EA48"/>
+    <path class="cl" d="M20 140H380M20 660H380M200 140V660" pathLength="1"/></svg>`);
+  const lines = [...el.querySelectorAll('.cl')];
+  return {
+    update(t, a, b, o = 1) {
+      const on = t > a - .05 && t < b + .4; el.style.display = on ? '' : 'none'; if (!on) return;
+      look(el, prog(t, a, a + .25) * (1 - prog(t, b - .3, b + .2)) * o, `translate(540px,960px) translate(-50%,-50%) perspective(1600px) rotateX(${(52 + 4 * Math.sin(t * .8)).toFixed(2)}deg) scale(${(1.25 + .05 * prog(t, a, b)).toFixed(3)})`);
+      lines.forEach((l, i) => { l.style.strokeDasharray = '1'; l.style.strokeDashoffset = (1 - tw(t, a + i * .08, a + .45 + i * .08, ease.outCubic)).toFixed(3); });
+    },
+  };
+}
+/** a parabola-ish flight between two points, with an apex height */
+const arc = (t, t0, t1, [x0, y0], [x1, y1], hgt) => { const u = (t - t0) / (t1 - t0); return { x: lerp(x0, x1, u), y: lerp(y0, y1, u) - Math.sin(Math.PI * u) * hgt }; };
+
+function padelReel2(hud) {
+  const DUR = 31.5;
+  hud.style.setProperty('--acc', PAD.orange);
+  const court = Court(hud);
+  const ball = Ball(hud), racket = Racket(hud);
+
+  // ---- 1 · straight in: the collaboration
+  const rl = Logo(hud, 250);
+  const tpl = h('div', 'tpl-mark', hud, `<img src="assets/padel/tpl-mark-centered.png">`);
+  const flash = h('div', 'pflash', hud);
+  const cross = h('div', 'cross', hud, `<svg viewBox="0 0 100 100" width="90" height="90"><path id="px1" d="M20 20L80 80" pathLength="1"/><path id="px2" d="M80 20L20 80" pathLength="1"/></svg>`);
+  const x1 = cross.querySelector('#px1'), x2 = cross.querySelector('#px2');
+  const collab = Lines(hud, ['Refract Tech ×', '*The Padel Lounge*'], { y: 1050, size: 92 });
+  const sub = h('div', 'soon', hud, `<b></b>Website · Booking · Admin dashboard`);
+
+  // ---- 2 · the question
+  const q = Lines(hud, ['What if booking a court', '*took ten seconds?*'], { y: 760 });
+
+  // ---- 3 · the website, under the floodlights
+  const meet = Lines(hud, ['Meet', '*The Padel Lounge.*'], { y: 250, size: 84 });
+  const phone = h('div', 'pphone', hud, `<div class="pscr"><div class="pstrip">${['home-hero', 'home-court', 'home-experience', 'home-gallery', 'home-pricing'].map(n => `<img src="assets/padel/${n}.png">`).join('')}</div></div><span class="pnotch"></span>`);
+  const page = phone.querySelector('.pstrip'), SEC = 548 * 2532 / 1170;
+  const url = h('div', 'purl', hud, `${ICON.lock}<span>tplrachaya.com</span>`);
+  const beams = [0, 1].map(i => h('div', 'beam beam' + i, hud));
+
+  // ---- 4 · booking in three taps
+  const bookH = Lines(hud, ['Booking in', '*three taps.*'], { y: 250, size: 84 });
+  const DUR_CH = [['1 hour', '$20', '$15'], ['1.5 hours', '$25', '$20'], ['2 hours', '$30', '$25']];
+  const DAYS = [['Today', 26], ['Fri', 27], ['Sat', 28], ['Sun', 29], ['Mon', 30]];
+  const book = h('div', 'pbook', hud, `
+    <div class="pb-top"><div><div class="pb-k">Book</div><div class="pb-h">Take the court</div></div><div class="pb-bell">${ICON.bell}<b>1</b></div></div>
+    <div class="pb-k">How long?</div>
+    <div class="pb-chips">${DUR_CH.map(([l, r, hh], i) => `<div class="pb-chip" id="qc${i}"><b>${l}</b><span>${r} regular</span><span class="hh">Happy ${hh}</span></div>`).join('')}</div>
+    <div class="pb-price"><span class="pb-old">$25</span><span class="pb-now">$25</span><span class="pb-tag">Happy hour applied</span></div>
+    <div class="pb-k">Which day?</div>
+    <div class="pb-days">${DAYS.map(([d, n], i) => `<div class="pb-day" id="qd${i}"><small>${d}</small><b>${n}</b></div>`).join('')}</div>
+    <div class="pb-btn"><span class="b1">Request the court</span><span class="b2"><i class="spin"></i>Awaiting confirmation</span></div>
+    <div class="pb-note">Pay at the venue when you arrive.</div>
+    <div class="pb-toast"><i>${ICON.check}</i><div><b>Booking confirmed</b><span>Fri 27 · 1.5 hours · $20</span></div></div>`);
+  const $b = sel => book.querySelector(sel);
+  const chips = [0, 1, 2].map(i => $b('#qc' + i)), days = [0, 1, 2, 3, 4].map(i => $b('#qd' + i));
+  const old = $b('.pb-old'), now = $b('.pb-now'), tag = $b('.pb-tag'), b1 = $b('.b1'), b2 = $b('.b2'), bell = $b('.pb-bell'), badge = bell.querySelector('b'), toast = $b('.pb-toast'), btn = $b('.pb-btn');
+  const touch = Touch(hud);
+
+  // ---- 5 · the venue's admin dashboard
+  const adminH = Lines(hud, ['And a dashboard', '*for the venue.*'], { y: 250, size: 84 });
+  const SLOTS = ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00', '00:00', '01:00', '02:00'];
+  const BOOKED = [1, 4, 6, 7, 9, 10, 13], BLOCKED = [3], HAPPY = [0, 1, 2, 3, 4, 5, 12, 13, 14];
+  const LADDER = [['Karim', 4.5, 5], ['Lea', 3, 3], ['Omar', 2.5, 2.5], ['Nour', 1.5, 1.5]];
+  const admin = h('div', 'padm', hud, `
+    <div class="pa-k">Admin</div><div class="pa-h">Court schedule</div>
+    <div class="pa-tabs"><span class="pa-hl"></span>${['Schedule', 'Customers', 'Rewards', 'Prices'].map((s, i) => `<span class="pa-tab" id="pt${i}">${s}</span>`).join('')}</div>
+    <div class="pa-view" id="pvA">
+      <section class="pa-sec"><div class="pa-st">Requests <b class="pa-count">2</b></div>
+        <div class="pa-req" id="rq0"><div><p class="pa-ref">TPL-4821</p><p class="pa-who">Karim · 1.5 hours</p><p class="pa-when">Fri 27 · 18:00 – 19:30 · $20</p></div>
+          <div class="pa-act"><span class="pa-acc">Accept</span><span class="pa-dec">Decline</span><span class="pa-ok"><i>${ICON.check}</i>Confirmed</span></div></div>
+        <div class="pa-req" id="rq1"><div><p class="pa-ref">TPL-4822</p><p class="pa-who">Lea · 1 hour</p><p class="pa-when">Sat 28 · 23:00 – 00:00 · $15</p></div>
+          <div class="pa-act"><span class="pa-acc">Accept</span><span class="pa-dec">Decline</span></div></div>
+      </section>
+      <div class="pa-toast"><i>${ICON.check}</i><div><b>Karim notified on WhatsApp</b><span>Booking TPL-4821 confirmed</span></div></div>
+    </div>
+    <div class="pa-view" id="pvB">
+      <section class="pa-sec"><div class="pa-st">Choose a day</div>
+        <div class="pa-days">${DAYS.map(([d, n], i) => `<div class="pa-day${i === 1 ? ' on' : ''}"><small>${d}</small><b>${n}</b><small>Nov</small></div>`).join('')}</div></section>
+      <section class="pa-sec"><div class="pa-st">Court hours · Fri 27</div>
+        <div class="pa-grid">${SLOTS.map((s, i) => `<div class="pa-slot" id="sl${i}">${HAPPY.includes(i) ? '<em></em>' : ''}<b>${s}</b><small>${BLOCKED.includes(i) ? 'Blocked' : 'Free'}</small></div>`).join('')}</div>
+        <div class="pa-legend"><span><i class="lf"></i>Free</span><span><i class="lb"></i>Booked</span><span><i class="lx"></i>Blocked</span><span><i class="lh"></i>Happy hour</span></div></section>
+    </div>
+    <div class="pa-view" id="pvC">
+      <section class="pa-sec"><div class="pa-st">Rewards ladder</div><p class="pa-sub">Every 5 hours played unlocks a free hour.</p>
+        ${LADDER.map(([n], i) => `<div class="pa-rung" id="rg${i}"><span class="pa-av">${n[0]}</span><div class="pa-rb"><div class="pa-rt"><b>${n}</b><span class="pa-hrs"></span></div><div class="pa-bar"><i></i></div></div><span class="pa-free">Free hour unlocked</span></div>`).join('')}
+      </section>
+    </div>`);
+  const $a = sel => admin.querySelector(sel);
+  const views = ['#pvA', '#pvB', '#pvC'].map($a), tabs = [0, 1, 2, 3].map(i => $a('#pt' + i)), hl = $a('.pa-hl');
+  const rq0 = $a('#rq0'), acc0 = rq0.querySelector('.pa-acc'), dec0 = rq0.querySelector('.pa-dec'), ok0 = rq0.querySelector('.pa-ok'), count = $a('.pa-count'), aToast = $a('.pa-toast');
+  const slots = SLOTS.map((_, i) => $a('#sl' + i)), rungs = LADDER.map((_, i) => $a('#rg' + i));
+
+  // ---- 6 · the venue, one feature at a time
+  const featL = h('div', 'ep-label', hud, 'Built for the venue'); featL.style.top = '400px';
+  const FEAT = [
+    ['02-courtside-branding-beside-the-blue-court.jpg', ['Full panoramic', 'glass court'], 'Glass on every side, built to tournament spec.'],
+    ['01-floodlit-entrance-with-neon-tpl-sign.jpg', ['Floodlit', 'until 3 AM'], '8 × 200W LED. Play under the lights.'],
+    [null, ['Happy hours,', 'priced automatically'], 'Quieter hours cost less, applied at booking.'],
+  ];
+  const feats = FEAT.map(([img, title, line], i) => {
+    const el = h('div', 'pfeat', hud, `<div class="pf-pic">${img ? `<img src="assets/padel/${img}">` : `<div class="hh-card"><div class="hh-row"><span class="hh-old">$20</span><span class="hh-now">$20</span></div><div class="hh-when"><span>12 PM – 5:30 PM</span><span>11:30 PM – 3 AM</span></div></div>`}<span class="pf-n">0${i + 1} / 03</span></div>
+      <div class="pf-t">${title.map((t, j) => `<div class="o-row"><span${j ? ' class="lime"' : ''}>${t}</span></div>`).join('')}</div><div class="pf-l">${line}</div>`);
+    return { el, img: el.querySelector('img'), hhOld: el.querySelector('.hh-old'), hhNow: el.querySelector('.hh-now'), rows: [...el.querySelectorAll('.o-row span')], line: el.querySelector('.pf-l') };
+  });
+
+  // ---- 7 · built by Refract
+  const built = Lines(hud, ['Designed and built by', '*Refract Tech.*'], { y: 690 });
+  const badgeR = h('div', 'pbuilt', hud, `<span>Built by</span><img src="assets/padel/refract.png">`);
+  const live = h('div', 'site-pill', hud, `<span class="email-sheen"></span>tplrachaya.com<em class="live"><b></b>Live</em>`);
+  const liveSheen = live.querySelector('.email-sheen');
+
+  // ---- 8 · the close
+  const end = Finale(hud, [['assets/padel/home-hero.png', '0 0'], ['assets/padel/book.png', '0 0'], ['assets/padel/home-court.png', '0 0'],
+    ['assets/padel/home-gallery.png', '0 0'], ['assets/padel/home-pricing.png', '0 0'], ['assets/padel/01-floodlit-entrance-with-neon-tpl-sign.jpg', 'center']], ['Want a website like this?', "*Let's talk.*"]);
+  end.root.classList.add('fin-padel');
+
+  const T = { q: 3.25, site: 5.4, book: 9.55, swing: 13.55, admin: 14.1, feat: 20.5, built: 25.3, end: 27.1 };
+  const TAPS = [10.2, 11.2, 11.75], CONF = 12.4, ACCEPT = 15.45, FEAT_AT = [20.6, 22.15, 23.7];
+  const BOUNCES = [3.62, 4.02, 4.38];
+  const slotAt = i => 16.95 + BOOKED.indexOf(i) * .14;
+  return {
+    DUR,
+    events: {
+      pock: [.42, ...BOUNCES, 13.83], x: [.7], tick: [T.q], whoosh: [5.35, 9.5, 20.45, 25.25], tap: [...TAPS, ACCEPT], bell: [CONF], notify: [15.75],
+      slots: BOOKED.map(slotAt), tab: [18.7], unlock: [19.45], item: FEAT_AT, end: [T.end], rise: [T.end + 1.05],
+      sections: { groove: 2.9, site: T.site, book: T.book, admin: T.admin, feat: T.feat, built: T.built, end: T.end },
+    },
+    update(t) {
+      // ---- the court draws itself; a ball drops in and bounces; the two marks burst out of the bounce
+      court.update(t, 0, 3.2, .55);
+      const cIn = spring(t, .45, 1.25, .72), cOut = ease.inCubic(prog(t, 2.95, 3.25));
+      rl.update(t, .45, 3.2, lerp(540, 300, clamp(cIn)) - cOut * 300, 800);
+      look(tpl, clamp(cIn * 2) * (1 - cOut), `translate(${(lerp(540, 780, clamp(cIn)) + cOut * 300).toFixed(1)}px,800px) translate(-50%,-50%) rotate(${((1 - clamp(cIn)) * -120).toFixed(1)}deg) scale(${(.4 + .6 * clamp(cIn)).toFixed(3)})`);
+      look(flash, bump(t, .38, .75), `translate(540px,820px) translate(-50%,-50%) scale(${(.4 + 1.4 * prog(t, .38, .75)).toFixed(3)})`);
+      look(cross, prog(t, .7, .8) * (1 - cOut), `translate(540px,800px) translate(-50%,-50%) scale(${(1 + .25 * bump(t, .8, 1.2)).toFixed(3)})`);
+      x1.style.strokeDashoffset = (1 - tw(t, .7, .9)).toFixed(3); x2.style.strokeDashoffset = (1 - tw(t, .8, 1.0)).toFixed(3);
+      collab.update(t, .9, 3.05);
+      const sk = ease.outExpo(prog(t, 1.35, 1.85));
+      look(sub, sk * (1 - cOut), `translate(540px,1300px) translate(-50%,-50%) translateY(${((1 - sk) * 20).toFixed(1)}px)`);
+
+      // ---- the question, with the ball bouncing across it
+      q.update(t, T.q, 5.3);
+      // ---- the website
+      meet.update(t, T.site + .05, 9.4);
+      const pk = spring(t, T.site, 1.0, .8), po = ease.inOutCubic(prog(t, 9.15, 9.55));
+      look(phone, clamp(pk * 2) * (1 - po), { y: (1 - pk) * 500 - po * 120, rx: (1 - clamp(pk)) * 18, ry: Math.sin(t * 1.1) * 3.5, s: (.9 + .1 * clamp(pk)) * (1 - .06 * po) });
+      page.style.transform = `translateY(${(-track(t, [[6.3, 0], [6.95, SEC, ease.inOutCubic], [7.35, SEC], [8.05, SEC * 3, ease.inOutCubic], [8.45, SEC * 3], [9.0, SEC * 4, ease.inOutCubic]])).toFixed(1)}px)`;
+      look(url, prog(t, 5.7, 6.0) * (1 - po), `translate(540px,486px) translate(-50%,-50%)`);
+      beams.forEach((bm, i) => { const u = prog(t, 5.55 + i * .15, 7.3 + i * .15); look(bm, Math.sin(Math.PI * u) * .9, `rotate(${(i ? 1 : -1) * (35 - 50 * ease.inOutSine(u))}deg)`); });
+
+      // ---- booking
+      bookH.update(t, T.book + .05, 13.45);
+      const bk = spring(t, T.book, 1.05, .8), bo = ease.inOutCubic(prog(t, 13.15, 13.6));
+      look(book, clamp(bk * 2) * (1 - bo), { y: (1 - bk) * 420 - bo * 60, x: -bo * 120, rx: (1 - clamp(bk)) * 12, rz: -bo * 4, s: .92 + .08 * clamp(bk) });
+      chips.forEach((c, i) => c.classList.toggle('on', i === 1 && t >= TAPS[0]));
+      now.textContent = '$' + (t < 10.5 ? 25 : Math.round(lerp(25, 20, tw(t, 10.5, 10.9))));
+      look(old, prog(t, 10.5, 10.65)); look(tag, prog(t, 10.75, 10.95), `scale(${(.8 + .2 * ease.outBack(prog(t, 10.75, 11.05))).toFixed(3)})`);
+      days.forEach((d, i) => d.classList.toggle('on', i === 1 && t >= TAPS[1]));
+      btn.classList.toggle('pressed', t >= TAPS[2]);
+      look(b1, 1 - prog(t, TAPS[2], TAPS[2] + .12)); look(b2, prog(t, TAPS[2] + .08, TAPS[2] + .2));
+      b2.querySelector('.spin').style.transform = `rotate(${(t * 520) % 360}deg)`;
+      bell.style.transform = `rotate(${(Math.sin((t - CONF) * 40) * 18 * bump(t, CONF, CONF + .55)).toFixed(2)}deg)`;
+      look(badge, prog(t, CONF, CONF + .1), `scale(${ease.outBack(prog(t, CONF, CONF + .25)).toFixed(3)})`);
+      const tk = spring(t, CONF + .05, 1.4, .7); look(toast, clamp(tk * 2), `translateY(${((1 - tk) * -120).toFixed(1)}px)`);
+      if (!book._pts) { const c = el => [110 + el.offsetLeft + el.offsetWidth / 2, 520 + el.offsetTop + el.offsetHeight / 2]; book._pts = [c(chips[1]), c(days[1]), c(btn)]; }
+      // ---- the admin dashboard
+      adminH.update(t, T.admin + .05, 20.3);
+      const ak = spring(t, T.admin, 1.0, .8), ao = ease.inOutCubic(prog(t, 20.05, 20.5));
+      look(admin, clamp(ak * 2) * (1 - ao), { x: (1 - ak) * 700, ry: (1 - ak) * -24, y: -ao * 60, s: (.94 + .06 * clamp(ak)) * (1 - .04 * ao) });
+      const view = t < 16.6 ? 0 : t < 18.7 ? 1 : 2;
+      views.forEach((v, i) => { const a = [T.admin, 16.6, 18.7][i], b = [16.6, 18.7, 99][i]; const k = ease.outCubic(prog(t, a, a + .4)), e = ease.inCubic(prog(t, b - .1, b + .2)); look(v, k * (1 - e), `translateY(${((1 - k) * 30 - e * 20).toFixed(1)}px)`); v.style.display = t > a - .05 && t < b + .25 ? '' : 'none'; });
+      const tabX = [0, 0, 2][view], tk2 = spring(t, 18.7, 1.6, .7);
+      if (!admin._tabs) admin._tabs = tabs.map(e => [e.offsetLeft, e.offsetWidth]);
+      const [tx0, tw0] = admin._tabs[0], [tx2, tw2] = admin._tabs[2], m = view === 2 ? clamp(tk2) : 0;
+      box(hl, lerp(tx0, tx2, m), tabs[0].offsetTop, lerp(tw0, tw2, m), tabs[0].offsetHeight);
+      tabs.forEach((e, i) => e.classList.toggle('on', i === tabX));
+      // requests: accept, notify
+      look(acc0, 1 - prog(t, ACCEPT + .05, ACCEPT + .2)); look(dec0, 1 - prog(t, ACCEPT + .05, ACCEPT + .2)); look(ok0, prog(t, ACCEPT + .1, ACCEPT + .3));
+      rq0.classList.toggle('done', t >= ACCEPT + .1);
+      count.textContent = t < ACCEPT + .1 ? '2' : '1';
+      look(count, 1, `scale(${(1 + .35 * bump(t, ACCEPT + .05, ACCEPT + .4)).toFixed(3)})`);
+      const nt = spring(t, 15.75, 1.4, .72); look(aToast, clamp(nt * 2), `translateY(${((1 - nt) * 40).toFixed(1)}px)`);
+      // schedule: the day fills in
+      slots.forEach((sEl, i) => {
+        const appear = ease.outBack(prog(t, 16.7 + i * .03, 17.0 + i * .03));
+        const isB = BOOKED.includes(i);
+        sEl.classList.toggle('booked', isB && t >= slotAt(i)); sEl.classList.toggle('blocked', BLOCKED.includes(i));
+        look(sEl, prog(t, 16.7 + i * .03, 16.85 + i * .03), `scale(${((.7 + .3 * appear) * (1 + (isB ? .08 * bump(t, slotAt(i), slotAt(i) + .3) : 0))).toFixed(3)})`);
+        if (isB) sEl.querySelector('small').textContent = t >= slotAt(i) ? 'Booked' : 'Free';
+      });
+      // rewards: the ladder fills; Karim reaches five hours
+      rungs.forEach((r, i) => {
+        const [, from, to] = LADDER[i];
+        const fill = lerp(0, from, tw(t, 18.85 + i * .08, 19.25 + i * .08, ease.outCubic)) + (to - from) * tw(t, 19.3, 19.45);
+        r.querySelector('.pa-bar i').style.transform = `scaleX(${(fill / 5).toFixed(3)})`;
+        r.querySelector('.pa-hrs').textContent = `${fill.toFixed(1)} / 5 h`;
+        look(r, prog(t, 18.8 + i * .08, 19.0 + i * .08), `translateX(${((1 - ease.outCubic(prog(t, 18.8 + i * .08, 19.2 + i * .08))) * 40).toFixed(1)}px)`);
+        if (i === 0) { r.classList.toggle('won', t >= 19.45); look(r.querySelector('.pa-free'), prog(t, 19.45, 19.6), `scale(${ease.outBack(prog(t, 19.45, 19.75)).toFixed(3)})`); }
+      });
+
+      // ---- the finger, for the booking taps and the accept
+      const AP = admin._accPt || (admin._accPt = (() => { const r = acc0; let x = 90, y = 470, e = r; while (e && e !== admin) { x += e.offsetLeft; y += e.offsetTop; e = e.offsetParent; } return [x + r.offsetWidth / 2, y + r.offsetHeight / 2]; })());
+      const [P1, P2, P3] = book._pts;
+      const path = t < 13 ? [[9.85, 980, 1700, 0], [10.1, ...P1, 1], [10.25, ...P1, 1], [11.05, ...P2, 1], [11.3, ...P2, 1], [11.6, ...P3, 1], [11.9, ...P3, 1], [12.15, 760, 1650, 0]]
+        : [[15.0, 980, 1700, 0], [15.35, ...AP, 1], [15.6, ...AP, 1], [15.95, 760, 1650, 0]];
+      touch.update(t, path, [...TAPS, ACCEPT]);
+
+      // ---- the ball and racket, carrying the cuts
+      ball.update(t, x => {
+        if (x >= 0 && x < .42) return { ...arc(x, 0, .42, [880, 1700], [540, 820], 520), s: .9 };                       // dropped in, bounce
+        if (x >= .42 && x < .9) return { ...arc(x, .42, .9, [540, 820], [540, 560], 120), s: 1 - .9 * prog(x, .6, .9), o: 1 - prog(x, .75, .9) };
+        if (x >= 3.35 && x < BOUNCES[0]) return { ...arc(x, 3.35, BOUNCES[0], [-60, 500], [230, 700], 120), s: .7 };    // across the question
+        if (x >= BOUNCES[0] && x < BOUNCES[1]) return { ...arc(x, BOUNCES[0], BOUNCES[1], [230, 700], [560, 700], 170), s: .7 };
+        if (x >= BOUNCES[1] && x < BOUNCES[2]) return { ...arc(x, BOUNCES[1], BOUNCES[2], [560, 700], [860, 700], 140), s: .7 };
+        if (x >= BOUNCES[2] && x < 4.9) return { ...arc(x, BOUNCES[2], 4.9, [860, 700], [1200, 420], 160), s: .7 };
+        if (x >= 13.3 && x < 13.83) return { ...arc(x, 13.3, 13.83, [1140, 1300], [330, 980], 260), s: .9 };          // fed to the racket
+        if (x >= 13.83 && x < 14.25) return { ...arc(x, 13.83, 14.25, [330, 980], [1250, 560], 120), s: .9 + .5 * prog(x, 13.83, 14.25) };
+        return null;
+      });
+      const sw = tw(t, 13.6, 13.95, ease.inOutCubic), sOut = prog(t, 13.95, 14.25);
+      racket.update(t, t > 13.45 && t < 14.3 ? { x: lerp(120, 250, sw), y: 1240, r: lerp(-70, 35, sw) + sOut * 20, o: prog(t, 13.45, 13.6) * (1 - sOut), s: 1.15 } : null);
+
+      // ---- the venue
+      const fl = ease.outExpo(prog(t, T.feat, T.feat + .5));
+      look(featL, fl * (1 - prog(t, 25.0, 25.3)), `translateY(${((1 - fl) * 16).toFixed(1)}px)`);
+      feats.forEach((f, i) => {
+        const a = FEAT_AT[i], b = i < 2 ? FEAT_AT[i + 1] - .05 : 25.15;
+        const on = t > a - .05 && t < b + .5; f.el.style.display = on ? '' : 'none'; if (!on) return;
+        const k = spring(t, a, 1.1, .8), e = ease.inOutCubic(prog(t, b - .1, b + .45));
+        look(f.el, clamp(k * 2) * (1 - e), { x: (1 - k) * 760 - e * 760, ry: (1 - k) * -30 + e * 30, s: .93 + .07 * clamp(k) });
+        if (f.img) f.img.style.transform = `scale(${(1.12 - .1 * prog(t, a, b + .4)).toFixed(4)}) translateX(${(-12 * prog(t, a, b)).toFixed(1)}px)`;
+        if (f.hhNow) { f.hhNow.textContent = '$' + Math.round(lerp(20, 15, tw(t, a + .5, a + .9))); look(f.hhOld, prog(t, a + .5, a + .65)); }
+        f.rows.forEach((r, j) => { const s0 = a + .3 + j * .1, qq = ease.outExpo(prog(t, s0, s0 + .7)); look(r, Math.min(1, qq * 1.5), `translateY(${((1 - qq) * 105).toFixed(1)}%)`, (1 - qq) * 6); });
+        const lq = ease.outExpo(prog(t, a + .55, a + 1.1)); look(f.line, lq, `translateY(${((1 - lq) * 20).toFixed(1)}px)`);
+      });
+      // ---- built by
+      built.update(t, T.built, 27.0);
+      const bb = ease.outExpo(prog(t, 25.7, 26.3)), bOut = prog(t, 26.8, 27.1);
+      look(badgeR, bb * (1 - bOut), `translate(540px,1000px) translate(-50%,-50%) translateY(${((1 - bb) * 30).toFixed(1)}px)`);
+      const lv = spring(t, 26.0, 1.4, .7);
+      look(live, clamp(lv * 2) * (1 - bOut), `translate(540px,1160px) translate(-50%,-50%) scale(${(.8 + .2 * lv).toFixed(3)})`);
+      liveSheen.style.transform = `translateX(${(-160 + prog(t, 26.2, 26.9) * 520).toFixed(1)}%)`;
+      end.update(t, T.end, DUR);
+    },
+  };
+}
+
 // ------------------------------------------------------------------ build and render
 async function paintCards() {
   const logo = await loadCardAssets();
@@ -706,7 +987,7 @@ window.ready = (async () => {
   await document.fonts.ready;
   const hud = document.getElementById('hud');
   const mark = new Image(); mark.src = 'assets/r-mark.png'; await mark.decode();
-  const E = ep === 'teaser' ? teaser(hud, mark) : ep === 'discover' ? discoverReel(hud, mark, await paintCards()) : ep === 'padel' ? padelReel(hud, mark) : ep === 'challenge' ? challengeReel(hud, mark) : stageEpisode(hud, ep, await paintCards());
+  const E = ep === 'teaser' ? teaser(hud, mark) : ep === 'discover' ? discoverReel(hud, mark, await paintCards()) : ep === 'padel' ? padelReel2(hud) : ep === 'padel-v1' ? padelReel(hud, mark) : ep === 'challenge' ? challengeReel(hud, mark) : stageEpisode(hud, ep, await paintCards());
   window.DURATION = E.DUR;
   window.EVENTS = { duration: E.DUR, ...E.events };
   window.render = t => {
