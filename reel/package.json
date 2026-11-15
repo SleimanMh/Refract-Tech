@@ -1,0 +1,11 @@
+{
+  "name": "refract-tech-reel",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "capture": "node scripts/capture-site.js",
+    "music": "python3 scripts/music.py",
+    "render": "node scripts/render.js",
+    "encode": "bash scripts/encode.sh"
+  }
+}
