@@ -1,6 +1,6 @@
 # Refract Tech — Instagram reel
 
-A 24 s, 1080 × 1920, 30 fps reel made only of the Refract Tech website: its own stage cards
+A 27 s, 1080 × 1920, 30 fps reel made only of the Refract Tech website: its own stage cards
 (drawn by the site's `src/deck/cardArt.ts`, bundled into `assets/cardArt.js`), its hero, its
 service cards, its expertise chain and its contact form. Every frame is drawn by
 `window.render(t)`, captured with Playwright, motion-blurred from three sub-frames and encoded
@@ -15,7 +15,7 @@ node ../node_modules/.bin/esbuild ../src/deck/cardArt.ts --bundle --format=esm -
 npm run capture        # stills of the real site → assets/site/
 npm run render         # sub-frames → out/samples/, cue sheet → out/events.json
 npm run music          # soundtrack → out/music.wav
-npm run encode         # → out/Refract-Tech-reel-v3.mp4
+npm run encode         # → out/Refract-Tech-reel-v4.mp4
 ```
 
 Review single frames without a full render: `node scripts/render.js --stills 1.5 7.6 21.2`
@@ -36,10 +36,13 @@ Review single frames without a full render: `node scripts/render.js --stills 1.5
 
 | s | Scene |
 | --- | --- |
-| 0–2.3 | A spark shatters into pieces of the site's card, which assemble; the camera pushes through — "Your idea. Built into a product." |
-| 2.3–4.3 | The site's hero, full width; the camera dives into its card deck |
+| 0–2.4 | The logo builds itself: a spark draws the ring, the R flies together from shards and locks, the name and tag rise in |
+| 2.4–4.3 | The site's hero, full width; the camera dives into its card deck |
 | 4.3–13.7 | The six stage cards, opening and turning like the site's deck, each with its step and heading |
-| 13.7–17 | What we build: the site's Web, Mobile and Automation & AI cards in a 3D carousel |
-| 17–19 | Our expertise: the six-step chain of disciplines |
-| 19–20.5 | refract-tech.com scrolling to the contact form |
-| 20.5–24 | The form shatters and gathers into the logo; "Let's build what's next." and the domain |
+| 13.7–20 | What we build: the site's Web, Mobile and Automation & AI cards, about two seconds each |
+| 20–22 | Our expertise: the six-step chain of disciplines |
+| 22–23.5 | refract-tech.com scrolling to the contact form |
+| 23.5–27 | The form shatters and gathers into the logo; "Let's build what's next." and the domain |
+
+The soundtrack plays one sound per event (see the cue sheet in `src/main.js`); only the music
+carries an echo, so no effect is ever heard twice.

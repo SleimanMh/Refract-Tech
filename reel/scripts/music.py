@@ -100,10 +100,15 @@ for i, tb0 in enumerate(np.arange(S0, S1, .5)):
 t = tt(S1 - S0); rise = hp(rnd.standard_normal(len(t)), .3) * (t / t[-1]) ** 2.5
 add(lp(rise, .25), S0, .22)
 
+# the music gets a dotted-eighth echo; the sound effects stay dry, so each one is heard once
+d = int(.375 * SR)
+L2, R2 = L.copy(), R.copy(); L2[d:] += R[:-d] * .16; R2[d:] += L[:-d] * .16
+L[:], R[:] = L2, R2
+
 # ------------------------------------------------------------------ sound design
 def whoosh(d=.55):
     t = tt(d); n = rnd.standard_normal(len(t)); e = np.sin(np.pi * t / d) ** 2
-    return lp(n * e, np.linspace(.03, .3, len(t))) * .9
+    return lp(n * e, np.linspace(.03, .26, len(t))) * .9
 def impact(g=1.0, low=40):
     t = tt(1.3); boom = sine(low + 70 * np.exp(-t * 16), t) * np.exp(-t * 4)
     air = hp(rnd.standard_normal(len(t)), .4) * np.exp(-t * 14) * .2
@@ -125,11 +130,13 @@ t = tt(.5); add(lp(hp(rnd.standard_normal(len(t)), .5) * (t / .5) ** 3, .4), 0.0
 add(sine(hz(89), tt(.5)) * (tt(.5) / .5) ** 2 * .3, 0.0, .5)
 for s in ev('flash'): add(impact(.9, 34), s); add(shimmer([77, 84, 89, 96], 2.0, 1.8), s, .22, -.3); add(shimmer([80, 87, 92], 2.0, 1.8), s + .01, .2, .3)
 for i, s in enumerate(ev('frag')): add(plink(84 + [0, 3, 7, 10, 12, 15, 19][i % 7]), s, .07, -.6 + (i % 5) * .3)
-for s in ev('whoosh'): add(whoosh(), s - .3, .32, -.2); add(whoosh()[::-1] * .6, s - .3, .2, .3)
+for s in ev('whoosh'): add(whoosh(), s - .3, .34)
 for s in ev('hit'): add(impact(.55), s)
+for s in ev('lock'): add(impact(.8, 36) + shimmer([77, 84, 89, 96], 1.3, 2.2) * .5, s)   # one bright hit
+for s in ev('reveal'): add(shimmer([72, 79, 84, 88], 1.6, 2.4), s, .3)
 for s in ev('boom'): add(impact(1.2, 30), s); add(shimmer([72, 79, 84, 91], 2.5, 1.5), s, .2)
 for i, s in enumerate(ev('tick')): add(plink([72, 75, 79, 80, 84, 87][i % 6]), s, .16, .2); add(click(3200), s, .12)
-for s in ev('click') + ev('tap'): add(click(1800), s, .35); add(click(900), s + .012, .2)
+for s in ev('click') + ev('tap'): add(click(1600), s, .4)
 for s in ev('pop'): add(pop(), s, .2, .2)
 for s in ev('snap'): add(impact(.6, 60), s); add(click(1200), s, .4)
 for s in ev('success'): add(chime(84, 91), s, .2)
@@ -155,9 +162,7 @@ for s in ev('logo'):                                               # the reveal:
     for i, m in enumerate([77, 80, 84, 89, 84, 92]): add(shimmer([m], 2.6, 2.2), s + .2 + i * .25, .14, -.6 + i * .24)
 
 # ------------------------------------------------------------------ mix
-d = int(.375 * SR)                                                  # a dotted-eighth echo, crossed
-L2, R2 = L.copy(), R.copy(); L2[d:] += R[:-d] * .16; R2[d:] += L[:-d] * .16
-mix = np.vstack([L2, R2])
+mix = np.vstack([L, R])
 mix *= np.clip(np.arange(N) / SR / .03, 0, 1) * (1 - np.clip((np.arange(N) / SR - (DUR - .6)) / .6, 0, 1))
 mix = np.tanh(mix * 1.15) / np.tanh(1.15)
 mix /= np.max(np.abs(mix)) / .9

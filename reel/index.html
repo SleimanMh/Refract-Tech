@@ -60,6 +60,16 @@ svg { display:block; }
   background:linear-gradient(90deg,transparent,rgba(182,108,250,.6) 30%,#fff 50%,rgba(255,144,107,.6) 70%,transparent); box-shadow:0 0 30px 6px rgba(182,108,250,.45); }
 .flare-v { width:8px; height:520px; background:linear-gradient(180deg,transparent,rgba(247,245,255,.85) 50%,transparent); box-shadow:none; }
 
+.hook-logo { position:absolute; left:0; top:0; width:1080px; height:1920px; transform-style:preserve-3d; }
+.r-shard { position:absolute; }
+.ring-tip { position:absolute; left:0; top:0; width:46px; height:46px; border-radius:50%; background:radial-gradient(circle,#fff 0,#F3EAFF 25%,rgba(255,144,107,.8) 45%,transparent 72%); box-shadow:0 0 40px 10px rgba(182,108,250,.5); }
+.hook-shine { position:absolute; overflow:hidden; -webkit-mask-image:url(assets/r-mark.png); mask-image:url(assets/r-mark.png); -webkit-mask-size:100% 100%; mask-size:100% 100%; }
+.hook-shine i { position:absolute; top:-40%; bottom:-40%; left:0; width:45%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.85),transparent); }
+.hook-word { position:absolute; left:0; right:0; top:1104px; text-align:center; overflow:hidden; padding-bottom:.1em; font-size:116px; font-weight:600; letter-spacing:-3.5px; line-height:1.12; }
+.hook-word span { display:inline-block; } .hook-word b { color:var(--coral); font-weight:600; }
+.hook-tag { position:absolute; left:0; right:0; top:1276px; display:flex; justify-content:center; align-items:center; gap:26px; font-size:32px; font-weight:400; letter-spacing:.34em; text-transform:uppercase; color:var(--ink2); }
+.hook-tag i { display:block; width:90px; height:3px; border-radius:2px; background:var(--violet); }
+
 /* the site's hero */
 .screen { position:absolute; border-radius:54px; overflow:hidden; background:#11112B; border:2.5px solid rgba(182,108,250,.55);
   box-shadow:0 80px 160px -50px #000, 0 0 140px -30px rgba(113,61,232,.55); }
