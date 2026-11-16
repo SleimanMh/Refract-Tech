@@ -38,6 +38,8 @@ const OUT = path.join(__dirname, '..', 'assets', 'challenge'), URL = 'http://loc
   await tile('grid-today-done');
   await p.evaluate(() => scrollTo(0, 0)); await p.waitForTimeout(300);
   await shot('board-after', { fullPage: false });
+  // both plans, as their rule cards
+  for (const lv of ['adv', 'beg']) { await p.click('#tab-' + lv); await p.waitForTimeout(400); await el('rules-' + lv, '#rules'); }
   // the coach's view: levels to assign
   const q = await open(true);
   await q.evaluate(() => document.getElementById('admin-sec')?.scrollIntoView({ block: 'start' })); await q.waitForTimeout(400);

@@ -93,3 +93,16 @@ node scripts/capture-challenge.js                                         # → 
 node scripts/render.js --page "series.html?ep=challenge" --out out/series/challenge --scale 2 --quality 96
 python3 scripts/challenge_music.py out/series/challenge
 ```
+
+## Eagle Strength — 60 Days Challenge (their own reel, no Refract branding)
+
+`eagle.html` + `src/eagle.js`: 25 s in Eagle Strength's black, gold and red with the app's type
+(Barlow Condensed, Permanent Marker). Motivation and calisthenics first (animated athletes doing
+pushups, pull-ups, a plank and a run, with live counters), consistency as a 60-day streak, then
+the app (the one-tap check-in, the squad board), the two levels with their real numbers, and
+"Day 1 starts now". Cuts sit on a 140 BPM grid; soundtrack `scripts/eagle_music.py` (phonk-style).
+
+```bash
+node scripts/render.js --page eagle.html --out out/eagle --scale 2 --quality 96
+python3 scripts/eagle_music.py out/eagle
+```

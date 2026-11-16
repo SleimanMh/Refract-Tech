@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Eagle Strength — 60 Days Challenge</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,800&family=Barlow:wght@400;500;600;700&family=Permanent+Marker&display=block">
+<style>
+/* Eagle Strength's own reel for the 60 Days Challenge: their black, gold and red, their type.
+   1080 × 1920; every frame is set by window.render(t). */
+:root { --ink:#0B0B0C; --gold:#F6B912; --gold2:#FFD34D; --red:#E3261C; --cream:#F2EFE7; --muted:#9B978D; }
+* { box-sizing:border-box; margin:0; padding:0; }
+html, body { width:1080px; height:1920px; overflow:hidden; background:#000; }
+body { font-family:Barlow,sans-serif; color:var(--cream); -webkit-font-smoothing:antialiased; }
+svg { display:block; }
+#bg, #hud { position:absolute; inset:0; }
+#hud { perspective:2200px; perspective-origin:540px 960px; }
+.abs { position:absolute; left:0; top:0; }
+.disp { font-family:"Barlow Condensed",sans-serif; font-weight:800; font-style:italic; text-transform:uppercase; letter-spacing:-.01em; line-height:.92; }
+.brush { font-family:"Permanent Marker",cursive; }
+.gold { color:var(--gold); } .red { color:var(--red); }
+
+/* big type blocks */
+.big { position:absolute; left:0; right:0; text-align:center; }
+.big .row { overflow:hidden; padding:0 .1em .06em; }
+.big .row span { display:inline-block; }
+.stamp { position:absolute; left:0; top:0; white-space:nowrap; }
+.slash { position:absolute; left:-200px; width:1480px; height:150px; background:var(--red); transform-origin:0 50%; }
+.eagle { position:absolute; left:0; top:0; }
+.eagle img { display:block; width:100%; filter:drop-shadow(0 0 30px rgba(246,185,18,.5)); }
+
+/* montage tiles */
+.tile { position:absolute; inset:0; }
+.t-label { position:absolute; left:0; right:0; top:300px; text-align:center; font-size:200px; }
+.t-sub { position:absolute; left:0; right:0; top:500px; text-align:center; font-size:40px; font-weight:600; letter-spacing:.3em; text-transform:uppercase; color:var(--muted); }
+.t-fig { position:absolute; left:0; top:0; width:1080px; height:1920px; }
+.t-count { position:absolute; left:0; right:0; top:1310px; text-align:center; font-size:250px; color:var(--gold); }
+.t-unit { position:absolute; left:0; right:0; top:1560px; text-align:center; font-size:40px; font-weight:700; letter-spacing:.3em; color:var(--cream); text-transform:uppercase; }
+.fig path, .fig line { stroke:var(--cream); stroke-linecap:round; stroke-linejoin:round; fill:none; }
+.fig circle { fill:var(--cream); }
+.fig .ground { stroke:var(--gold); stroke-width:8; }
+.fig .bar { stroke:var(--gold); stroke-width:22; }
+
+/* the 60-day streak */
+.streak { position:absolute; left:110px; top:760px; width:860px; display:grid; grid-template-columns:repeat(10,1fr); gap:14px; }
+.streak i { display:block; aspect-ratio:1; border-radius:50%; border:3px solid rgba(242,239,231,.18); }
+.streak i.on { background:var(--gold); border-color:var(--gold); box-shadow:0 0 18px rgba(246,185,18,.7); }
+.streak i.now { background:var(--red); border-color:var(--red); box-shadow:0 0 24px rgba(227,38,28,.9); }
+.daynum { position:absolute; left:0; right:0; top:1340px; text-align:center; font-size:220px; }
+
+/* the app */
+.phone { position:absolute; left:250px; top:540px; width:580px; height:1180px; border-radius:72px; padding:16px; background:linear-gradient(160deg,#2a2a2e,#0c0c0e);
+  box-shadow:0 0 0 3px rgba(246,185,18,.6), 0 80px 160px -50px #000, 0 0 160px -30px rgba(246,185,18,.35); }
+.scr { position:relative; width:548px; height:1148px; border-radius:58px; overflow:hidden; background:#0B0B0C; }
+.scr img { display:block; width:548px; }
+.notch { position:absolute; left:50%; top:30px; width:150px; height:38px; margin-left:-75px; border-radius:20px; background:#000; }
+.card { position:absolute; left:90px; width:900px; border-radius:36px; overflow:hidden; background:#0B0B0C;
+  box-shadow:0 0 0 3px rgba(246,185,18,.55), 0 80px 160px -50px #000, 0 0 140px -30px rgba(246,185,18,.4); }
+.card img { display:block; width:100%; }
+.card .m1 { position:absolute; inset:0; opacity:0; }
+.spark { position:absolute; left:0; top:0; width:20px; height:20px; border-radius:50%; background:radial-gradient(circle,#fff,#FFD34D 40%,rgba(246,185,18,0) 70%); }
+.touch { position:absolute; left:0; top:0; width:80px; height:80px; border-radius:50%; background:rgba(255,255,255,.18); border:4px solid rgba(255,255,255,.9); box-shadow:0 0 30px rgba(246,185,18,.8); }
+.chip { position:absolute; left:0; top:0; display:flex; align-items:center; gap:14px; padding:22px 38px; border-radius:999px; background:#0B0B0C; white-space:nowrap;
+  box-shadow:inset 0 0 0 3px rgba(246,185,18,.65); font-size:36px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+.chip b { width:16px; height:16px; border-radius:50%; background:var(--gold); box-shadow:0 0 14px var(--gold); }
+
+/* two levels */
+.lvl { position:absolute; top:640px; width:470px; border-radius:30px; overflow:hidden; background:#151517; box-shadow:0 40px 90px -40px #000; }
+.lvl .lh { padding:24px 28px 10px; font-size:64px; }
+.lvl .lb { padding:0 28px 30px; font-size:30px; line-height:1.35; color:var(--cream); }
+.lvl .lb strong { color:var(--gold); }
+.lvl.adv .lb strong { color:#ff5a4f; }
+.lvl .stat { margin:0 28px 28px; padding:20px 22px; border-radius:20px; background:#0B0B0C; }
+.lvl .stat b { display:block; font-size:72px; } .lvl .stat span { font-size:24px; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); }
+.vs { position:absolute; left:0; right:0; top:1000px; text-align:center; font-size:90px; }
+
+/* close */
+.link { position:absolute; left:0; top:0; padding:26px 48px; border-radius:999px; background:var(--gold); color:#0B0B0C; font-size:44px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; white-space:nowrap; font-family:"Barlow Condensed"; }
+.tagline { position:absolute; left:0; right:0; text-align:center; font-size:30px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); }
+.flash { position:absolute; inset:0; background:radial-gradient(circle at 50% 45%, rgba(255,235,180,.85), rgba(227,38,28,.35) 40%, transparent 75%); mix-blend-mode:screen; }
+.veil { position:absolute; inset:0; background:#000; }
+</style>
+</head>
+<body>
+<canvas id="bg" width="1080" height="1920"></canvas>
+<div id="hud"></div>
+<script type="module" src="src/eagle.js"></script>
+</body>
+</html>
