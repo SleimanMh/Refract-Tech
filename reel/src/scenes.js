@@ -22,15 +22,17 @@ export async function paintCards() {
 // ================================================================ opening: the logo builds itself out of light
 // A spark draws the ring, the R flies together from shards and locks with a flash, a glint runs
 // across it, the name and tag rise in; then the camera goes through the R into the website.
+let hookN = 0;
 export function Hook(world, mark) {
+  const hid = 'hr' + hookN++;
   const root = h('div', 'layer', world);
   const CX = 540, CY = 840;
   const glow = h('div', 'spark-glow', root), spark = h('div', 'spark', root);
   const flare = h('div', 'flare', root), flareV = h('div', 'flare flare-v', root);
   const logo = h('div', 'hook-logo', root);
   const halo = h('div', 'logo-glow', logo);
-  const ring = h('div', 'logo-ring', logo, `<svg viewBox="0 0 420 420" width="420" height="420"><defs><linearGradient id="hr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#713DE8"/><stop offset=".5" stop-color="#B66CFA"/><stop offset="1" stop-color="#FF906B"/></linearGradient></defs>
-    <circle id="hrc" cx="210" cy="210" r="196" stroke="url(#hr)" stroke-width="8" fill="none" stroke-linecap="round" transform="rotate(-90 210 210)" stroke-dasharray="1231.5"/></svg>`);
+  const ring = h('div', 'logo-ring', logo, `<svg viewBox="0 0 420 420" width="420" height="420"><defs><linearGradient id="${hid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#713DE8"/><stop offset=".5" stop-color="#B66CFA"/><stop offset="1" stop-color="#FF906B"/></linearGradient></defs>
+    <circle id="hrc" cx="210" cy="210" r="196" stroke="url(#${hid})" stroke-width="8" fill="none" stroke-linecap="round" transform="rotate(-90 210 210)" stroke-dasharray="1231.5"/></svg>`);
   const hrc = ring.querySelector('#hrc');
   const tip = h('div', 'ring-tip', logo);
   // the R, cut into shards

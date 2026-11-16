@@ -97,9 +97,11 @@ function StageCard(parent, cv, accent) {
 }
 
 /** The R in its ring. */
+let logoN = 0;
 function Logo(parent, size = 300) {
-  const el = h('div', 'logo', parent, `<svg viewBox="0 0 420 420" width="${size}" height="${size}"><defs><linearGradient id="lg${size}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#713DE8"/><stop offset=".5" stop-color="#B66CFA"/><stop offset="1" stop-color="#FF906B"/></linearGradient></defs>
-    <circle cx="210" cy="210" r="196" stroke="url(#lg${size})" stroke-width="9" fill="none" stroke-linecap="round" transform="rotate(-90 210 210)" stroke-dasharray="1231.5"/></svg><img src="assets/r-mark.png" style="width:${size * .6}px">`);
+  const gid = `lg${size}-${logoN++}`;
+  const el = h('div', 'logo', parent, `<svg viewBox="0 0 420 420" width="${size}" height="${size}"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#713DE8"/><stop offset=".5" stop-color="#B66CFA"/><stop offset="1" stop-color="#FF906B"/></linearGradient></defs>
+    <circle cx="210" cy="210" r="196" stroke="url(#${gid})" stroke-width="9" fill="none" stroke-linecap="round" transform="rotate(-90 210 210)" stroke-dasharray="1231.5"/></svg><img src="assets/r-mark.png" style="width:${size * .6}px">`);
   el.style.width = el.style.height = size + 'px';
   const c = el.querySelector('circle'), img = el.querySelector('img');
   return {
@@ -698,8 +700,9 @@ function challengeReel(hud, mark) {
 // and racket that carry the cuts, the site and its booking flow, the venue's admin dashboard
 // (rebuilt from the site's own code: requests, the day's schedule, the rewards ladder), the venue,
 // and the receding-wall close.
-const BALL = `<svg viewBox="0 0 100 100" width="96" height="96"><defs><radialGradient id="bg1" cx=".38" cy=".32" r=".7"><stop offset="0" stop-color="#F8FF9E"/><stop offset=".55" stop-color="#D8EA48"/><stop offset="1" stop-color="#9DB21E"/></radialGradient></defs>
-  <circle cx="50" cy="50" r="46" fill="url(#bg1)"/><path d="M12 30C34 40 34 60 12 72M88 28C66 40 66 60 88 70" stroke="#FFFFF0" stroke-width="5" fill="none" stroke-linecap="round" opacity=".9"/></svg>`;
+let ballN = 0;
+const ballSVG = () => { const id = 'bg' + ballN++; return `<svg viewBox="0 0 100 100" width="96" height="96"><defs><radialGradient id="${id}" cx=".38" cy=".32" r=".7"><stop offset="0" stop-color="#F8FF9E"/><stop offset=".55" stop-color="#D8EA48"/><stop offset="1" stop-color="#9DB21E"/></radialGradient></defs>
+  <circle cx="50" cy="50" r="46" fill="url(#${id})"/><path d="M12 30C34 40 34 60 12 72M88 28C66 40 66 60 88 70" stroke="#FFFFF0" stroke-width="5" fill="none" stroke-linecap="round" opacity=".9"/></svg>`; };
 const RACKET = `<svg viewBox="0 0 220 420" width="220" height="420"><defs><linearGradient id="rk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F2A04A"/><stop offset=".5" stop-color="#E8822C"/><stop offset="1" stop-color="#8F4A0E"/></linearGradient></defs>
   <path d="M110 8C170 8 210 52 210 112C210 176 170 232 132 252L126 300H94L88 252C50 232 10 176 10 112C10 52 50 8 110 8Z" fill="url(#rk)"/>
   <path d="M110 22C162 22 196 60 196 112C196 168 162 218 110 236C58 218 24 168 24 112C24 60 58 22 110 22Z" fill="none" stroke="#FFD9A8" stroke-width="3" opacity=".55"/>
@@ -708,8 +711,8 @@ const RACKET = `<svg viewBox="0 0 220 420" width="220" height="420"><defs><linea
 
 /** A padel ball with a short motion trail; pose(t) gives {x, y, s, o} or null. */
 function Ball(parent) {
-  const ghosts = [5, 4, 3, 2, 1].map(k => { const g = h('div', 'ball ghost', parent, BALL); g.dataset.k = k; return g; });
-  const el = h('div', 'ball', parent, BALL);
+  const ghosts = [5, 4, 3, 2, 1].map(k => { const g = h('div', 'ball ghost', parent, ballSVG()); g.dataset.k = k; return g; });
+  const el = h('div', 'ball', parent, ballSVG());
   return {
     update(t, pose) {
       const show = (g, p, o) => { if (!p) { g.style.display = 'none'; return; } g.style.display = ''; look(g, (p.o ?? 1) * o, `translate(${p.x.toFixed(1)}px,${p.y.toFixed(1)}px) translate(-50%,-50%) rotate(${((p.r ?? t * 720) % 360).toFixed(1)}deg) scale(${(p.s ?? 1).toFixed(3)})`); };
@@ -973,6 +976,162 @@ function padelReel2(hud) {
   };
 }
 
+// ------------------------------------------------------------------ collaboration reels, v3
+// Shared by both case studies: a head-on clash of the two logos to open, a signature wipe on
+// every cut, the existing middle (site, booking, dashboard / app, check-in, features), and a new
+// Refract close: the screens recede, the logo builds itself from shards under turning light rays.
+
+/** The opening: two brands rocket in from either side, collide, spring apart, and an × is cut between them. */
+function Clash(parent, { badge, colL, colR, sparkCols, lines, sub }) {
+  const root = h('div', 'clash', parent);
+  const paneL = h('div', 'cl-pane cl-l', root), paneR = h('div', 'cl-pane cl-r', root);
+  paneL.style.background = `linear-gradient(100deg, ${colL}55, ${colL}11 70%, transparent)`; paneR.style.background = `linear-gradient(260deg, ${colR}66, ${colR}14 70%, transparent)`;
+  const stL = h('div', 'cl-streak', root), stR = h('div', 'cl-streak', root);
+  stL.style.background = `linear-gradient(90deg, transparent, ${colL})`; stR.style.background = `linear-gradient(270deg, transparent, ${colR})`;
+  const rings = [colL, colR].map(c => { const r = h('div', 'cl-ring', root); r.style.borderColor = c; r.style.boxShadow = `0 0 60px ${c}, inset 0 0 60px ${c}`; return r; });
+  const flash = h('div', 'cl-flash', root);
+  const left = h('div', 'cl-holder', root, badge);
+  const right = h('div', 'cl-holder', root), rl = Logo(right, 250);
+  const R = Array.from({ length: 30 }, (_, i) => { const e = h('div', 'cl-spark', root); e.style.background = sparkCols[i % sparkCols.length]; e.style.boxShadow = `0 0 16px ${sparkCols[i % sparkCols.length]}`; return { e, a: i / 30 * Math.PI * 2 + (i % 3) * .2, r: 260 + (i * 97) % 380, s: .6 + (i % 4) * .3 }; });
+  const cross = h('div', 'cross cl-x', root, `<svg viewBox="0 0 100 100" width="110" height="110"><path d="M16 16L84 84" pathLength="1"/><path d="M84 16L16 84" pathLength="1"/></svg>`);
+  const [xa, xb] = cross.querySelectorAll('path');
+  const text = Lines(root, lines, { y: 1040, size: 96 });
+  const subEl = h('div', 'soon', root, `<b></b>${sub}`);
+  const HIT = .45, END = 3.0;
+  return {
+    HIT, END,
+    shake: t => (t >= HIT ? 1 - prog(t, HIT, HIT + .4) : 0),
+    update(t) {
+      const on = t < END + .05; root.style.display = on ? '' : 'none'; if (!on) return;
+      const out = ease.inCubic(prog(t, END - .3, END));
+      const pk = ease.outExpo(prog(t, 0, .25)), pf = 1 - tw(t, .5, 1.3);
+      look(paneL, pk * pf, `translateX(${((1 - pk) * -700).toFixed(1)}px)`); look(paneR, pk * pf, `translateX(${((1 - pk) * 700).toFixed(1)}px)`);
+      const a = ease.inCubic(prog(t, .05, HIT)), sp = spring(t, HIT, 1.5, .5);
+      const xl = t < HIT ? lerp(-320, 445, a) : lerp(445, 300, sp), xr = t < HIT ? lerp(1400, 635, a) : lerp(635, 780, sp);
+      const sc = (t < HIT ? 1.3 : lerp(1.3, 1, clamp(sp))) * (1 + out * 1.6), blur = t < HIT ? a * 7 : 0;
+      look(left, (1 - out), `translate(${(xl - out * 500).toFixed(1)}px,800px) scale(${sc.toFixed(3)}) rotate(${(t < HIT ? (1 - a) * -25 : 0).toFixed(1)}deg)`, blur);
+      look(right, (1 - out), `translate(${(xr + out * 500).toFixed(1)}px,800px) scale(${sc.toFixed(3)})`, blur);
+      rl.update(t, -2, 99, 0, 0);
+      const so = bump(t, .02, HIT + .12);
+      look(stL, so, `translate(${(xl - 1250).toFixed(1)}px,760px)`); look(stR, so, `translate(${(xr + 50).toFixed(1)}px,760px)`);
+      rings.forEach((r, i) => { const u = prog(t, HIT + i * .08, HIT + .7 + i * .08); look(r, u > 0 && u < 1 ? 1 - u : 0, `translate(540px,800px) translate(-50%,-50%) scale(${(.2 + ease.outCubic(u) * 4.2).toFixed(3)})`); });
+      look(flash, bump(t, HIT - .04, HIT + .4));
+      R.forEach(({ e, a: an, r, s: ss }) => { const u = prog(t, HIT, HIT + .85), d = ease.outCubic(u) * r; look(e, u > 0 && u < 1 ? 1 - u * u : 0, `translate(${(540 + Math.cos(an) * d).toFixed(1)}px,${(800 + Math.sin(an) * d + u * u * 160).toFixed(1)}px) scale(${(ss * (1 - u * .5)).toFixed(3)})`); });
+      look(cross, prog(t, .74, .8) * (1 - out), `translate(540px,800px) translate(-50%,-50%) rotate(${((1 - ease.outExpo(prog(t, .74, 1.1))) * 90).toFixed(1)}deg) scale(${(1 + .5 * bump(t, .8, 1.15)).toFixed(3)})`);
+      xa.style.strokeDashoffset = (1 - tw(t, .74, .86)).toFixed(3); xb.style.strokeDashoffset = (1 - tw(t, .8, .92)).toFixed(3);
+      text.update(t, 1.0, END - .15);
+      const sk = ease.outExpo(prog(t, 1.4, 1.9));
+      look(subEl, sk * (1 - out), `translate(540px,1300px) translate(-50%,-50%) translateY(${((1 - sk) * 20).toFixed(1)}px)`);
+    },
+  };
+}
+
+/** Eagle Strength's wipe: three claw slashes rake across the frame on each cut. */
+function Claw(parent) {
+  const bars = [0, 1, 2].map(i => { const b = h('div', 'claw', parent); b.style.top = (380 + i * 460) + 'px'; return b; });
+  return { update(t, cuts) { let c = null; for (const x of cuts) if (t > x - .22 && t < x + .3) c = x;
+    bars.forEach((b, i) => { if (c === null) { b.style.display = 'none'; return; } b.style.display = '';
+      const a = c - .2 + i * .035, k = ease.outExpo(prog(t, a, a + .2)), e = ease.inCubic(prog(t, c + .02 + i * .03, c + .26 + i * .03));
+      look(b, 1, `rotate(-24deg) translateX(${((1 - k) * 1900 - e * 2100).toFixed(1)}px) scaleY(${(1 + 1.6 * bump(t, c - .1, c + .12)).toFixed(3)})`); }); } };
+}
+/** The padel wipe: a ball smashed straight into the lens, filling the frame, then gone. */
+function BallWipe(parent) {
+  const el = h('div', 'ballwipe', parent, ballSVG());
+  return { update(t, cuts) { let c = null; for (const x of cuts) if (t > x - .24 && t < x + .26) c = x;
+    if (c === null) { el.style.display = 'none'; return; } el.style.display = '';
+    const k = ease.inCubic(prog(t, c - .24, c)), e = prog(t, c, c + .24);
+    look(el, 1 - e, `translate(${lerp(940, 540, k).toFixed(1)}px,${lerp(1500, 960, k).toFixed(1)}px) translate(-50%,-50%) rotate(${(t * 500 % 360).toFixed(1)}deg) scale(${(.6 + k * 26 + e * 10).toFixed(3)})`); } };
+}
+
+/** The Refract close: screens recede, a spark draws the ring and the R assembles under turning rays, then the call. */
+function Outro(parent, mark, tiles, { heading, tileClass = '' }) {
+  const root = h('div', 'fin ' + tileClass, parent);
+  const wall = h('div', 'fin-wall', root, tiles.map(([src, pos]) => `<div class="fin-tile" style="background-image:url(${src});background-position:${pos}"></div>`).join(''));
+  const cells = [...wall.children];
+  const rays = h('div', 'rays', root);
+  const world = h('div', 'world', root), hook = Hook(world, mark);
+  const label = h('div', 'ep-label', root, 'Designed and built by'); label.style.color = '#CFCAE8';
+  const head = Lines(root, heading, { y: 1000, size: 84 });
+  const pill = h('div', 'email', root, `<span class="email-sheen"></span><i>${ICON.mail}</i><span class="e-txt"></span>`);
+  const txt = pill.querySelector('.e-txt'), pSheen = pill.querySelector('.email-sheen');
+  const soon = h('div', 'soon', root, `<b></b>refract-tech.com · launching soon`);
+  const veil = h('div', 'fin-veil', root);
+  const LOGO = .75;
+  return {
+    lockAt: t0 => t0 + LOGO + 1.12, ctaAt: t0 => t0 + 3.55,
+    focus(t, t0) { const l = t - t0 - LOGO; if (l < 0) return null; const m = tw(t, t0 + 3.0, t0 + 3.7); return { x: 540, y: lerp(840, 580, m), r: 760, a: Math.min(1, l) * .75 }; },
+    update(t, t0, tout) {
+      const on = t > t0 - .05; root.style.display = on ? '' : 'none'; if (!on) return;
+      const pull = tw(t, t0 + .25, t0 + 1.3, ease.inOutCubic);
+      look(wall, 1 - tw(t, t0 + .8, t0 + 1.3), `translate(540px,900px) translate(-50%,-50%) perspective(1800px) rotateX(${(10 + 30 * pull).toFixed(2)}deg) rotateZ(${(-8 * pull).toFixed(2)}deg) translateZ(${(-1800 * pull).toFixed(1)}px)`);
+      cells.forEach((c, i) => { const k = spring(t, t0 - .1 + i * .05, 1.7, .72); look(c, clamp(k * 2), `translateY(${((1 - k) * 300).toFixed(1)}px) scale(${(.8 + .2 * clamp(k)).toFixed(3)})`); });
+      const m = tw(t, t0 + 3.0, t0 + 3.7, ease.inOutCubic), l = clamp(t - t0 - LOGO, 0, 2.12);
+      world.style.display = t > t0 + LOGO ? '' : 'none';
+      world.style.transformOrigin = '540px 840px';
+      world.style.transform = `translateY(${(-260 * m).toFixed(1)}px) scale(${lerp(1, .7, m).toFixed(4)})`;
+      hook.update(l);
+      look(rays, tw(t, t0 + LOGO + .9, t0 + LOGO + 1.6) * .8, `translate(540px,${lerp(840, 580, m).toFixed(1)}px) translate(-50%,-50%) rotate(${(t * 14).toFixed(2)}deg) scale(${(1 + .25 * bump(t, t0 + LOGO + 1.05, t0 + LOGO + 1.7)).toFixed(3)})`);
+      const lk = ease.outExpo(prog(t, t0 + LOGO + .5, t0 + LOGO + 1.1));
+      label.style.top = lerp(470, 250, m).toFixed(1) + 'px';
+      look(label, lk, `translateY(${((1 - lk) * 16).toFixed(1)}px)`); label.style.letterSpacing = `${(.26 + (1 - lk) * .3).toFixed(3)}em`;
+      head.update(t, t0 + 3.55, 99);
+      const p = spring(t, t0 + 4.1, 1.4, .7);
+      look(pill, clamp(p * 2), `translate(540px,1290px) translate(-50%,-50%) scale(${(.8 + .2 * clamp(p)).toFixed(3)})`);
+      const n = Math.round(prog(t, t0 + 4.2, t0 + 4.85) * 24), full = 'refract@refract-tech.com'; if (txt.textContent.length !== n) txt.textContent = full.slice(0, n);
+      pSheen.style.transform = `translateX(${(-160 + prog(t, t0 + 5.0, t0 + 5.7) * 520).toFixed(1)}%)`;
+      const s = ease.outExpo(prog(t, t0 + 4.7, t0 + 5.2));
+      look(soon, s, `translate(540px,1410px) translate(-50%,-50%) translateY(${((1 - s) * 16).toFixed(1)}px)`);
+      look(veil, tw(t, tout - .4, tout, ease.inOutSine) * .9);
+    },
+  };
+}
+
+function collab(hud, mark, cfg) {
+  hud.style.setProperty('--acc', cfg.acc);
+  const stage = h('div', 'stagebox', hud);
+  const base = cfg.base(stage);
+  const outro = Outro(hud, mark, cfg.tiles, cfg.outro);
+  const clash = Clash(hud, cfg.clash);
+  const wipe = cfg.wipe(hud);
+  const T0 = +(cfg.stop - cfg.shift).toFixed(3), DUR = +(T0 + 7.3).toFixed(2);
+  const cuts = [clash.END, ...cfg.cuts, T0];
+  const ev = { duration: DUR, style: cfg.style, clash: [clash.HIT], slash: [.76], slam: [1.0], cuts, outro: [T0], lock: [outro.lockAt(T0)], cta: [outro.ctaAt(T0)], sweep: [0] };
+  for (const [k, v] of Object.entries(base.events)) {
+    if (cfg.dropKeys.includes(k) || !Array.isArray(v) || typeof v[0] !== 'number') continue;
+    const w = v.map(x => +(x - cfg.shift).toFixed(3)).filter(x => x > clash.END + .05 && x < T0 - .05); if (w.length) ev[k] = w;
+  }
+  return {
+    DUR, events: ev,
+    focus: t => outro.focus(t, T0),
+    update(t) {
+      clash.update(t);
+      const live = t >= clash.END - .02 && t < T0 + .35;
+      stage.style.display = live ? '' : 'none';
+      if (live) { stage.style.opacity = (1 - prog(t, T0, T0 + .3)).toFixed(3); base.update(Math.min(t + cfg.shift, cfg.stop + .3)); }
+      outro.update(t, T0, DUR);
+      wipe.update(t, cuts);
+      const sh = Math.max(clash.shake(t), ...cuts.map(c => (t >= c ? 1 - prog(t, c, c + .2) : 0) * .5));
+      hud.style.transform = sh > .01 ? `translate(${(Math.sin(t * 95) * 14 * sh).toFixed(1)}px,${(Math.cos(t * 81) * 11 * sh).toFixed(1)}px)` : '';
+    },
+  };
+}
+const eagleCollab = (hud, mark) => collab(hud, mark, {
+  acc: CH.gold, style: 'epic', base: st => challengeReel(st, mark), shift: 1.9, stop: 18.45, cuts: [5.1, 8.1, 11.8], dropKeys: ['tick', 'whoosh'],
+  wipe: Claw,
+  clash: { badge: `<div class="eagle-mark"><img src="assets/challenge/eagle.png"></div>`, colL: '#F6B912', colR: '#713DE8', sparkCols: ['#F6B912', '#FFD34D', '#B66CFA', '#FF906B', '#fff'],
+    lines: ['Eagle Strength ×', '*Refract Tech*'], sub: 'Two strengths · One challenge' },
+  tiles: [['assets/challenge/top.png', '0 0'], ['assets/challenge/mission-done.png', '0 0'], ['assets/challenge/board.png', '0 0'], ['assets/challenge/coach.png', '0 0'], ['assets/challenge/phases.png', '0 -150px'], ['assets/challenge/poster.jpg', 'center']],
+  outro: { heading: ['Have an idea worth building?', "*Let's talk.*"] },
+});
+const padelCollab = (hud, mark) => collab(hud, mark, {
+  acc: PAD.orange, style: 'jersey', base: st => padelReel2(st), shift: .25, stop: 25.3, cuts: [5.15, 9.3, 20.25], dropKeys: ['tick', 'whoosh'],
+  wipe: BallWipe,
+  clash: { badge: `<div class="tpl-mark"><img src="assets/padel/tpl-mark-centered.png"></div>`, colL: '#C96A17', colR: '#713DE8', sparkCols: ['#D8EA48', '#F4FFB4', '#E8822C', '#B66CFA', '#fff'],
+    lines: ['The Padel Lounge ×', '*Refract Tech*'], sub: 'Website · Booking · Admin dashboard' },
+  tiles: [['assets/padel/home-hero.png', '0 0'], ['assets/padel/book.png', '0 0'], ['assets/padel/home-court.png', '0 0'], ['assets/padel/home-gallery.png', '0 0'], ['assets/padel/home-pricing.png', '0 0'], ['assets/padel/01-floodlit-entrance-with-neon-tpl-sign.jpg', 'center']],
+  outro: { heading: ['Want a website like this?', "*Let's talk.*"], tileClass: 'fin-padel' },
+});
+
 // ------------------------------------------------------------------ build and render
 async function paintCards() {
   const logo = await loadCardAssets();
@@ -987,7 +1146,7 @@ window.ready = (async () => {
   await document.fonts.ready;
   const hud = document.getElementById('hud');
   const mark = new Image(); mark.src = 'assets/r-mark.png'; await mark.decode();
-  const E = ep === 'teaser' ? teaser(hud, mark) : ep === 'discover' ? discoverReel(hud, mark, await paintCards()) : ep === 'padel' ? padelReel2(hud) : ep === 'padel-v1' ? padelReel(hud, mark) : ep === 'challenge' ? challengeReel(hud, mark) : stageEpisode(hud, ep, await paintCards());
+  const E = ep === 'teaser' ? teaser(hud, mark) : ep === 'discover' ? discoverReel(hud, mark, await paintCards()) : ep === 'padel' ? padelCollab(hud, mark) : ep === 'eagle-collab' ? eagleCollab(hud, mark) : ep === 'padel-v2' ? padelReel2(hud) : ep === 'padel-v1' ? padelReel(hud, mark) : ep === 'challenge' ? challengeReel(hud, mark) : stageEpisode(hud, ep, await paintCards());
   window.DURATION = E.DUR;
   window.EVENTS = { duration: E.DUR, ...E.events };
   window.render = t => {

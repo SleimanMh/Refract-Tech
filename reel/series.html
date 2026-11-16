@@ -249,6 +249,26 @@ svg { display:block; }
 .hh-row { display:flex; align-items:center; gap:30px; } .hh-old { font-size:70px; color:#9CA3AF; text-decoration:line-through; } .hh-now { font-family:"Space Grotesk"; font-size:180px; font-weight:700; color:#D8EA48; letter-spacing:-.04em; }
 .hh-when { display:flex; gap:16px; } .hh-when span { padding:12px 22px; border-radius:20px; background:rgba(247,245,255,.08); font-size:28px; color:#F7F5FF; box-shadow:inset 0 0 0 2px rgba(216,234,72,.4); }
 .fin-padel .fin-tile { box-shadow:0 0 0 2px rgba(201,106,23,.55), 0 40px 80px -30px #000; }
+
+/* collaboration v3: clash opening, wipes, rays */
+.stagebox { position:absolute; inset:0; perspective:2200px; perspective-origin:540px 1000px; }
+.clash { position:absolute; inset:0; }
+.cl-pane { position:absolute; top:0; bottom:0; width:640px; }
+.cl-l { left:0; clip-path:polygon(0 0,100% 0,78% 100%,0 100%); } .cl-r { right:0; clip-path:polygon(22% 0,100% 0,100% 100%,0 100%); }
+.cl-streak { position:absolute; left:0; top:0; width:1200px; height:80px; border-radius:40px; filter:blur(10px); }
+.cl-holder { position:absolute; left:0; top:0; width:0; height:0; }
+.cl-holder > * { position:absolute !important; left:-125px !important; top:-125px !important; }
+.cl-holder .logo { left:0 !important; top:0 !important; }
+.cl-ring { position:absolute; left:0; top:0; width:360px; height:360px; border-radius:50%; border:6px solid; }
+.cl-flash { position:absolute; inset:0; mix-blend-mode:screen; background:radial-gradient(circle at 540px 800px, #fff, rgba(255,220,150,.7) 18%, rgba(182,108,250,.35) 40%, transparent 70%); }
+.cl-spark { position:absolute; left:0; top:0; width:16px; height:16px; margin:-8px; border-radius:50%; }
+.cl-x path { stroke-width:11; filter:drop-shadow(0 0 14px #fff); }
+.claw { position:absolute; left:-400px; width:1900px; height:110px; border-radius:90px 12px 90px 12px; z-index:40;
+  background:linear-gradient(90deg,#E3261C,#F6B912 30%,#FFD34D 60%,#fff); box-shadow:0 0 60px rgba(246,185,18,.8); }
+.ballwipe { position:absolute; left:0; top:0; width:96px; height:96px; z-index:40; }
+.rays { position:absolute; left:0; top:0; width:1900px; height:1900px; border-radius:50%; mix-blend-mode:screen;
+  background:repeating-conic-gradient(from 0deg, rgba(182,108,250,.0) 0deg, rgba(182,108,250,.34) 5deg, rgba(255,144,107,.0) 11deg, rgba(113,61,232,.0) 20deg);
+  -webkit-mask-image:radial-gradient(closest-side, #000 12%, transparent 72%); mask-image:radial-gradient(closest-side, #000 12%, transparent 72%); }
 </style>
 </head>
 <body>
