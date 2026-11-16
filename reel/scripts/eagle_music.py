@@ -69,10 +69,10 @@ def sec(t):
     if t < S['comfort']: return 'hook'
     if t < S['mont']: return 'comfort'
     if t < S['cons']: return 'work'
-    if t < S['app']: return 'streak'
-    if t < S['tap'] + (EV['tap'] - S['tap']): return 'app'
-    if t < S['lvl']: return 'app2'
-    if t < S['cta']: return 'levels'
+    if t < S['lvl']: return 'streak'
+    if t < S['tap']: return 'levels'
+    if t < EV['tap']: return 'app'
+    if t < S['cta']: return 'app2'
     return 'call'
 
 for bar in range(int(np.ceil(DUR / BAR)) + 1):
@@ -110,7 +110,7 @@ t = S['mont'] - 2 * B; k = 0
 while t < S['mont'] - .02:
     add(M, snare(), t, .15 + .3 * k / 16, .1); t += B / 4 if t < S['mont'] - B else B / 8; k += 1
 # the streak: a rising sweep
-d = S['app'] - S['cons'] - .1; t = tt(d); add(M, lp(hp(rnd.standard_normal(len(t)), .3) * (t / d) ** 2.5, .3), S['cons'] + .05, .3)
+d = S['lvl'] - S['cons'] - .1; t = tt(d); add(M, lp(hp(rnd.standard_normal(len(t)), .3) * (t / d) ** 2.5, .3), S['cons'] + .05, .3)
 # the end rings out
 add(M, b808(ROOT[0], DUR - S['cta'] - 2 * BAR + .2), S['cta'] + 2 * BAR, .4)
 add(M, pad([37, 49, 56, 61, 64], DUR - S['cta'] - 2 * BAR + .2, .03), S['cta'] + 2 * BAR, .22)
@@ -125,6 +125,9 @@ for s in EV.get('hits', []):
     if any(abs(s - b) < .01 for b in big): add(FX, impact(1.0 if s == S['cta'] else .8), s)
     else: add(FX, whip(), s - .05, .5)
 for s in EV.get('whoosh', []): add(FX, whoosh(.5), s - .25, .3)
+def slash():
+    t = tt(.3); n = hp(rnd.standard_normal(len(t)), .5) * np.exp(-((t - .08) / .05) ** 2); return n * .9 + sine(3200 + 2500 * t / .3, t) * np.exp(-t * 18) * .25
+for s in EV.get('claws', []): add(FX, slash(), s - .14, .5)
 
 mix = M + FX
 tsec = np.arange(N) / SR

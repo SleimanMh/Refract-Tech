@@ -6,9 +6,10 @@ import { bump, clamp, ease, h, lerp, look, prog, rng, spring, track, tw } from '
 
 const B = 60 / 140;                       // one beat
 const at = beats => +(beats * B).toFixed(3);
-const T = { hook: 0, comfort: at(6), mont: at(11), cons: at(21), app: at(27), tap: at(33), board: at(37), lvl: at(41), cta: at(48), end: 25.0 };
-const TILES = [T.mont, at(13.5), at(16), at(18.5)];
-const TAP = at(34.5);
+const T = { hook: 0, comfort: at(6), mont: at(11), cons: at(23), lvl: at(29), tap: at(38), board: at(42.5), cta: at(47), end: 25.0 };
+const TILES = [T.mont, at(14), at(17), at(20)];
+const TAP = at(39.5);
+const CLAWS = [T.comfort, T.mont, T.cons, T.lvl, T.tap, T.cta];
 
 // ------------------------------------------------------------------ background: black, glows, dust, grain
 function Background(cv) {
@@ -149,6 +150,20 @@ function Figure(parent, kind) {
         // the spine, the shoulder blades, the lats
         dt.setAttribute('d', seg(f(0, 10), f(0, 300)) + `M${P(...f(-70, 40))}Q${P(...f(-40, 90))} ${P(...f(-20, 130))}M${P(...f(70, 40))}Q${P(...f(40, 90))} ${P(...f(20, 130))}M${P(...f(-120, 100))}Q${P(...f(-90, 180))} ${P(...f(-70, 240))}M${P(...f(120, 100))}Q${P(...f(90, 180))} ${P(...f(70, 240))}`);
         floor.setAttribute('cy', 1260);
+      } else if (kind === 'flag') {
+        // dragon flag: shoulders pinned, the whole body levered up and down as one line
+        const G = 1150, sh = [330, G - 70], u = .5 - .5 * Math.cos(2 * Math.PI * x / (3 * B)), th = lerp(.2, 1.12, ease.inOutSine(u)), L = 560;
+        const d = [Math.cos(th), -Math.sin(th)], at = k => [sh[0] + d[0] * L * k, sh[1] + d[1] * L * k];
+        const hip = at(.46), knee = at(.72), ankle = at(.97), grip = [205, G - 175], el1 = elbow(sh, grip, 105, -1);
+        set([
+          limb(knee, ankle, [[0, 25, 24], [.5, 24, 22], [1, 15, 15]]), limb(ankle, add2(ankle, mul(d, 34)), PROF.foot),
+          limb(hip, knee, [[0, 42, 42], [.5, 38, 37], [1, 24, 25]]),
+          limb(sh, hip, [[0, 50, 50], [.25, 58, 62], [.6, 46, 50], [1, 44, 44]]),
+          limb(sh, [270, G - 78], PROF.neck), ellipse([228, G - 84], 46, 38),
+          limb(sh, el1, PROF.upper), limb(el1, grip, PROF.fore),
+        ]);
+        ground.setAttribute('d', seg([90, G + 22], [990, G + 22])); bar.setAttribute('d', seg([205, G + 14], [205, G - 200]));
+        dt.setAttribute('d', seg(at(.12), at(.4))); floor.setAttribute('cy', G + 30);
       } else if (kind === 'run') {
         const ph = 2 * Math.PI * x / (1.5 * B), bob = Math.abs(Math.sin(ph)) * -12, hip = [520, 930 + bob], sh = [566, 712 + bob];
         const leg = (p, s) => { const th = .6 * Math.sin(p), kn = [hip[0] + 148 * Math.sin(th), hip[1] + 148 * Math.cos(th)], bend = .25 + 1.15 * Math.max(0, -Math.sin(p - .6)), a2 = th - bend, an = [kn[0] + 150 * Math.sin(a2), kn[1] + 150 * Math.cos(a2)];
@@ -174,20 +189,28 @@ const six = h('div', 'stamp brush gold', hud, '60'); six.style.fontSize = '470px
 const days = h('div', 'stamp disp', hud, 'DAYS'); days.style.fontSize = '250px';
 const chal = h('div', 'stamp brush', hud, 'CHALLENGE'); chal.style.fontSize = '120px'; chal.style.color = '#0B0B0C';
 const noEx = Slam(hud, ['NO <span class="red">EXCUSES.</span>'], { y: 1390, size: 120 });
-const eagleTop = h('div', 'eagle', hud, '<img src="assets/challenge/eagle.png">'); eagleTop.style.width = '300px';
+const eagleTop = h('div', 'eagle', hud, '<img src="assets/challenge/eagle.png">'); eagleTop.style.width = '420px';
+const mkBurst = () => ({ rings: [0, 1].map(i => h('div', 'ring ring' + i, hud)), sparks: Array.from({ length: 26 }, () => h('div', 'spark', hud)) });
+const burstA = mkBurst(), burstB = mkBurst();
+function burst(b, t, at0, x, y) {
+  b.rings.forEach((r, i) => { const u = prog(t, at0 + i * .08, at0 + .7 + i * .08); look(r, u > 0 && u < 1 ? 1 - u : 0, `translate(${x}px,${y}px) translate(-50%,-50%) scale(${(.2 + ease.outCubic(u) * 4).toFixed(3)})`); });
+  b.sparks.forEach((sp, i) => { const a = i / 26 * 6.283 + (i % 3) * .2, u = prog(t, at0, at0 + .85), d = ease.outCubic(u) * (240 + (i * 97) % 360); look(sp, u > 0 && u < 1 ? 1 - u * u : 0, `translate(${(x + Math.cos(a) * d).toFixed(1)}px,${(y + Math.sin(a) * d + u * u * 150).toFixed(1)}px) translate(-50%,-50%) scale(${(1.2 - u * .7).toFixed(3)})`); });
+}
+const claws = [0, 1, 2].map(i => { const b = h('div', 'claw', hud); b.style.top = (380 + i * 460) + 'px'; return b; });
 
 // 2 · comfort zone
 const comfort = Slam(hud, ['YOUR COMFORT', 'ZONE WILL', '<span class="red">KILL</span> YOU.'], { y: 620, size: 190, gap: .95 });
 
 // 3 · the work
 const TILE = [
-  ['push', 'PUSHUPS', 'Day after day', 40, 'reps', v => Math.round(v)],
-  ['pull', 'PULL-UPS', 'Pull your weight', 12, 'reps', v => Math.round(v)],
-  ['plank', 'PLANK', 'Hold the line', 105, 'seconds', v => `${Math.floor(v / 60)}:${String(Math.round(v) % 60).padStart(2, '0')}`],
+  ['push', 'PUSHUPS', 'Both tracks · every push day', 50, 'reps', v => Math.round(v)],
+  ['plank', 'PLANK', 'Beginner track · up to 3:05', 185, 'hold', v => `${Math.floor(v / 60)}:${String(Math.round(v) % 60).padStart(2, '0')}`],
+  ['flag', 'DRAGON FLAGS', 'Advanced track · 20 up to 45', 45, 'reps', v => Math.round(v)],
   ['run', 'RUN', '+100 m every run', 5.5, 'km', v => v.toFixed(1)],
 ].map(([kind, label, sub, to, unit, f], i) => {
   const el = h('div', 'tile', hud);
-  const lab = h('div', 't-label disp', el, label), sb = h('div', 't-sub', el, sub);
+  const lab = h('div', 't-label disp', el, label); if (label.length > 9) lab.style.fontSize = '150px';
+  const sb = h('div', 't-sub', el, sub); sb.style.fontSize = '34px'; sb.style.letterSpacing = '.2em';
   const fig = Figure(el, kind);
   const cnt = h('div', 't-count disp', el, '0'), un = h('div', 't-unit', el, unit);
   cnt.style.top = '1290px'; un.style.top = '1530px';
@@ -203,24 +226,24 @@ const dayNum = h('div', 'daynum disp', hud, 'DAY 01');
 // 5 · the app
 const appH = Slam(hud, ['ONE PLAN.', '<span class="gold">ONE SQUAD.</span>'], { y: 230, size: 130 });
 const phone = h('div', 'phone', hud, `<div class="scr"><img src="assets/challenge/full.png"></div><span class="notch"></span>`);
-const page = phone.querySelector('img');
+const page = phone.querySelector('img'); phone.style.display = 'none';
 const tapH = Slam(hud, ['TICK YOUR DAY.'], { y: 300, size: 140 });
 const mission = h('div', 'card', hud, `<img src="assets/challenge/mission.png"><img class="m1" src="assets/challenge/mission-done.png">`); mission.style.top = '600px';
 const m1 = mission.querySelector('.m1');
 const sparks = Array.from({ length: 18 }, () => h('div', 'spark', hud));
 const sees = h('div', 'chip', hud, '<b></b>The whole squad sees it');
 const touch = h('div', 'touch', hud);
-const boardH = Slam(hud, ['EVERYONE SEES', '<span class="gold">EVERYONE\'S PROGRESS.</span>'], { y: 260, size: 92 });
+const boardH = Slam(hud, ['YOUR SQUAD', '<span class="gold">IS WATCHING.</span>'], { y: 250, size: 130 });
 const board = h('div', 'card', hud, `<img src="assets/challenge/board.png">`); board.style.top = '560px'; board.style.height = '980px';
 const boardImg = board.querySelector('img');
 
 // 6 · two levels
-const lvlH = Slam(hud, ['PICK YOUR', '<span class="gold">LEVEL.</span>'], { y: 270, size: 150 });
-const beg = h('div', 'lvl', hud, `<div class="lh disp gold">BEGINNER</div><div class="lb"><strong>40 pushups</strong> + core. Plank from 1:00 up to <strong>3:05</strong>.</div><div class="stat"><b class="disp gold">1,040</b><span>pushups</span></div>`);
-const adv = h('div', 'lvl adv', hud, `<div class="lh disp red">ADVANCED</div><div class="lb"><strong>50 Eagles pushups</strong> + dragon flags, 20 up to <strong>45</strong>.</div><div class="stat"><b class="disp red">1,300</b><span>pushups</span></div>`);
+const lvlH = Slam(hud, ['TWO TRACKS.', '<span class="gold">ONE CHALLENGE.</span>'], { y: 270, size: 130 });
+const beg = h('div', 'lvl', hud, `<div class="lh disp gold">BEGINNER</div><div class="lb"><strong>40 pushups</strong> + core every push day. Plank, hollow body, superman.</div><div class="stat"><b class="disp gold">1,040</b><span>pushups</span></div><div class="stat"><b class="disp gold">3:05</b><span>plank by day 60</span></div>`);
+const adv = h('div', 'lvl adv', hud, `<div class="lh disp red">ADVANCED</div><div class="lb"><strong>50 Eagles pushups</strong>: clap, diamond, archer, pike. Then dragon flags.</div><div class="stat"><b class="disp red">1,300</b><span>pushups</span></div><div class="stat"><b class="disp red">845</b><span>dragon flags</span></div>`);
 beg.style.left = '60px'; adv.style.left = '550px';
 const both = h('div', 'chip', hud, '<b></b>26 runs · 110.5 km · 8 hikes');
-const coach = h('div', 'tagline', hud, 'Your coach sets your level'); coach.style.top = '1470px';
+const coach = h('div', 'tagline', hud, 'Your coach sets your level'); coach.style.top = '1520px';
 
 // 7 · the call
 const eagle = h('div', 'eagle', hud, '<img src="assets/challenge/eagle.png">'); eagle.style.width = '560px';
@@ -231,13 +254,13 @@ const link = h('div', 'link', hud, 'Link in bio');
 const tag = h('div', 'tagline', hud, 'Train harder · Go further · Be stronger'); tag.style.top = '1530px';
 const flash = h('div', 'flash', hud), veil = h('div', 'veil', hud);
 
-const HITS = [.28, .55, T.comfort, at(7), at(8), ...TILES, T.cons, TAP, T.lvl, T.cta];
+const HITS = [.25, .5, .75, T.comfort, at(7), at(8), ...TILES, T.cons, T.lvl, T.tap, TAP, T.board, T.cta];
 const C = (x, y) => `translate(${x}px,${y}px) translate(-50%,-50%)`;
 
 window.DURATION = T.end;
 window.EVENTS = {
   duration: T.end, beat: B, sections: T, tiles: TILES, tap: TAP,
-  hits: HITS, stamp: [.28, .55, .9], streak: [at(22), at(25.5)], whoosh: [T.app - .05, T.board - .05], cta: [T.cta],
+  hits: HITS, stamp: [.25, .5, .75, 1.0], claws: CLAWS, whoosh: [T.board - .05], cta: [T.cta],
 };
 
 window.render = t => {
@@ -250,12 +273,16 @@ window.render = t => {
   // ---- 1 · hook: 60 / DAYS / CHALLENGE, NO EXCUSES, the eagle
   const hout = ease.inCubic(prog(t, T.comfort - .25, T.comfort));
   look(slash, prog(t, .12, .2) * (1 - hout), `scaleX(${ease.outExpo(prog(t, .12, .45)).toFixed(3)}) skewY(-6deg)`);
-  const sk = ease.outExpo(prog(t, .28, .5)); look(six, clamp(sk * 3) * (1 - hout), `${C(540, 620)} rotate(-6deg) scale(${(1 + (1 - sk) * 1.2 + hout * .4).toFixed(3)})`, (1 - sk) * 16);
-  const dk = ease.outExpo(prog(t, .55, .75)); look(days, clamp(dk * 3) * (1 - hout), `${C(540, 930)} scale(${(1 + (1 - dk) * 1.2 + hout * .4).toFixed(3)})`, (1 - dk) * 16);
-  const ck = ease.outExpo(prog(t, .9, 1.1)); look(chal, clamp(ck * 3) * (1 - hout), `${C(540, 1140)} rotate(-4deg) scale(${(1 + (1 - ck) * .8).toFixed(3)})`);
+  const sk = ease.outExpo(prog(t, .5, .72)); look(six, clamp(sk * 3) * (1 - hout), `${C(540, 620)} rotate(-6deg) scale(${(1 + (1 - sk) * 1.2 + hout * .4).toFixed(3)})`, (1 - sk) * 16);
+  const dk = ease.outExpo(prog(t, .75, .95)); look(days, clamp(dk * 3) * (1 - hout), `${C(540, 930)} scale(${(1 + (1 - dk) * 1.2 + hout * .4).toFixed(3)})`, (1 - dk) * 16);
+  const ck = ease.outExpo(prog(t, 1.0, 1.2)); look(chal, clamp(ck * 3) * (1 - hout), `${C(540, 1140)} rotate(-4deg) scale(${(1 + (1 - ck) * .8).toFixed(3)})`);
   chal.style.background = 'linear-gradient(90deg,#F6B912,#FFD34D)'; chal.style.padding = '0 40px';
-  noEx.update(t, [1.35], T.comfort - .05);
-  look(eagleTop, prog(t, 1.7, 1.9) * (1 - hout), `${C(540, 300)} scale(${(.9 + .1 * ease.outBack(prog(t, 1.7, 2.0))).toFixed(3)})`);
+  noEx.update(t, [1.45], T.comfort - .05);
+  const ek0 = ease.outExpo(prog(t, .12, .3));
+  look(eagleTop, clamp(ek0 * 3) * (1 - hout), `${C(540, 300)} scale(${(1 + (1 - ek0) * 3).toFixed(3)})`, (1 - ek0) * 18);
+  burst(burstA, t, .25, 540, 300); burst(burstB, t, T.cta + .05, 540, 470);
+  let cw = null; for (const x of CLAWS) if (t > x - .22 && t < x + .3) cw = x;
+  claws.forEach((b, i) => { if (cw === null) { b.style.display = 'none'; return; } b.style.display = ''; const a = cw - .2 + i * .035, k = ease.outExpo(prog(t, a, a + .2)), e = ease.inCubic(prog(t, cw + .02 + i * .03, cw + .26 + i * .03)); look(b, 1, `rotate(-24deg) translateX(${((1 - k) * 1900 - e * 2100).toFixed(1)}px) scaleY(${(1 + 1.6 * bump(t, cw - .1, cw + .12)).toFixed(3)})`); });
 
   // ---- 2 · comfort zone
   comfort.update(t, [T.comfort, at(7), at(8)], T.mont - .02);
@@ -276,23 +303,18 @@ window.render = t => {
   });
 
   // ---- 4 · consistency: sixty days light up, one by one
-  cons.update(t, [T.cons, at(22)], T.app - .05);
-  const sOn = t > T.cons - .05 && t < T.app; streak.style.display = dayNum.style.display = sOn ? '' : 'none';
+  cons.update(t, [T.cons, T.cons + B], T.lvl - .05);
+  const sOn = t > T.cons - .05 && t < T.lvl; streak.style.display = dayNum.style.display = sOn ? '' : 'none';
   if (sOn) {
     look(streak, prog(t, T.cons + .1, T.cons + .35));
-    const n = Math.floor(lerp(0, 60, ease.inOutSine(prog(t, at(22.5), T.app - .35))));
+    const n = Math.floor(lerp(0, 60, ease.inOutSine(prog(t, T.cons + 1.5 * B, T.lvl - .35))));
     dots.forEach((d, i) => { d.className = i < n - 1 ? 'on' : i === n - 1 ? 'now' : ''; });
     dayNum.innerHTML = `DAY <span class="${n >= 60 ? 'gold' : 'red'}">${String(Math.max(1, n)).padStart(2, '0')}</span>`;
-    look(dayNum, prog(t, T.cons + .3, T.cons + .5), `scale(${(1 + (n >= 60 ? .12 * bump(t, T.app - .35, T.app - .05) : 0)).toFixed(3)})`);
+    look(dayNum, prog(t, T.cons + .3, T.cons + .5), `scale(${(1 + (n >= 60 ? .12 * bump(t, T.lvl - .35, T.lvl - .05) : 0)).toFixed(3)})`);
   }
 
   // ---- 5 · the app: one plan, one squad; tick your day; everyone sees it
-  appH.update(t, [T.app, at(28)], T.tap - .05);
-  const pk = spring(t, T.app, 1.1, .78), po = ease.inCubic(prog(t, T.tap - .3, T.tap));
-  look(phone, clamp(pk * 2) * (1 - po), { y: (1 - pk) * 500 - po * 80, rx: (1 - clamp(pk)) * 18, ry: Math.sin(t * 1.2) * 4, s: (.9 + .1 * clamp(pk)) * (1 - .05 * po) });
-  page.style.transform = `translateY(${(-track(t, [[at(28.5), 0], [at(31.5), 1250, ease.inOutCubic]])).toFixed(1)}px)`;
-  phone.style.display = t > T.app - .05 && t < T.tap + .1 ? '' : 'none';
-
+  appH.update(t, [999], 999);   // the phone scene is retired
   tapH.update(t, [T.tap], T.board - .05);
   const mk = spring(t, T.tap, 1.2, .78), mo = ease.inCubic(prog(t, T.board - .3, T.board));
   mission.style.display = t > T.tap - .05 && t < T.board + .1 ? '' : 'none';
@@ -304,22 +326,22 @@ window.render = t => {
   const sv = spring(t, TAP + .4, 1.5, .62);
   look(sees, clamp(sv * 2) * (1 - mo), `${C(540, 1430)} scale(${(.8 + .2 * sv).toFixed(3)})`);
 
-  boardH.update(t, [T.board, at(38)], T.lvl - .05);
-  const bk = spring(t, T.board, 1.1, .8), bo = ease.inCubic(prog(t, T.lvl - .3, T.lvl));
-  board.style.display = t > T.board - .05 && t < T.lvl + .1 ? '' : 'none';
+  boardH.update(t, [T.board, T.board + B], T.cta - .05);
+  const bk = spring(t, T.board, 1.1, .8), bo = ease.inCubic(prog(t, T.cta - .3, T.cta));
+  board.style.display = t > T.board - .05 && t < T.cta + .1 ? '' : 'none';
   look(board, clamp(bk * 2) * (1 - bo), { y: (1 - bk) * 400 - bo * 80, s: .93 + .07 * clamp(bk) });
-  boardImg.style.transform = `translateY(${(-track(t, [[T.board + .5, 0], [T.lvl - .2, 520, ease.inOutSine]])).toFixed(1)}px)`;
+  boardImg.style.transform = `translateY(${(-track(t, [[T.board + .5, 0], [T.cta - .2, 520, ease.inOutSine]])).toFixed(1)}px)`;
 
   // ---- 6 · two levels
-  lvlH.update(t, [T.lvl, at(42)], T.cta - .05);
+  lvlH.update(t, [T.lvl, T.lvl + B], T.tap - .05);
   [beg, adv].forEach((c, i) => {
-    const k = spring(t, T.lvl + .25 + i * .15, 1.3, .7), e = ease.inCubic(prog(t, T.cta - .3, T.cta));
-    c.style.display = t > T.lvl && t < T.cta + .1 ? '' : 'none';
+    const k = spring(t, T.lvl + .25 + i * .15, 1.3, .7), e = ease.inCubic(prog(t, T.tap - .3, T.tap));
+    c.style.display = t > T.lvl && t < T.tap + .1 ? '' : 'none';
     look(c, clamp(k * 2) * (1 - e), { x: (1 - k) * (i ? 500 : -500), ry: (1 - k) * (i ? -30 : 30), y: -e * 60 });
   });
-  const bth = spring(t, at(44), 1.5, .62);
-  look(both, clamp(bth * 2) * (1 - prog(t, T.cta - .3, T.cta)), `${C(540, 1330)} scale(${(.8 + .2 * bth).toFixed(3)})`);
-  look(coach, prog(t, at(45), at(45) + .25) * (1 - prog(t, T.cta - .3, T.cta)));
+  const bth = spring(t, T.lvl + 3 * B, 1.5, .62);
+  look(both, clamp(bth * 2) * (1 - prog(t, T.tap - .3, T.tap)), `${C(540, 1440)} scale(${(.8 + .2 * bth).toFixed(3)})`);
+  look(coach, prog(t, T.lvl + 4 * B, T.lvl + 4 * B + .25) * (1 - prog(t, T.tap - .3, T.tap)));
 
   // ---- 7 · the call: the eagle, DAY 1 STARTS NOW, join, link in bio
   const ek = spring(t, T.cta, 1.3, .62);
@@ -332,7 +354,7 @@ window.render = t => {
   const lk = spring(t, T.cta + 1.75, 1.5, .55);
   look(link, clamp(lk * 2), `${C(540, 1410)} scale(${((.7 + .3 * lk) * (1 + .04 * Math.sin(t * 6) * prog(t, T.cta + 2.3, T.cta + 2.5))).toFixed(3)})`);
   look(tag, prog(t, T.cta + 2.1, T.cta + 2.4));
-  look(flash, Math.max(bump(t, .26, .55) * .8, bump(t, T.cta, T.cta + .4) * .9, bump(t, TAP, TAP + .35) * .4));
+  look(flash, Math.max(bump(t, .22, .55) * .9, bump(t, T.cta, T.cta + .4) * .9, bump(t, TAP, TAP + .35) * .4));
   look(veil, tw(t, T.end - .45, T.end));
 };
 
