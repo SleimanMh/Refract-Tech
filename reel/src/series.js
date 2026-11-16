@@ -1132,6 +1132,128 @@ const padelCollab = (hud, mark) => collab(hud, mark, {
   outro: { heading: ['Want a website like this?', "*Let's talk.*"], tileClass: 'fin-padel' },
 });
 
+// ------------------------------------------------------------------ The Padel Lounge, its own reel (~43 s)
+// For the venue to post: a racket-smash opening, the site, booking in depth (three taps, WhatsApp,
+// what is included, rewards), the admin dashboard in depth (requests, schedule, rewards ladder, then
+// adding bookings, prices, customers, partner clubs), the venue, "the court is waiting", and the
+// credit: designed and built by Refract Tech.
+function FeatCard(parent, pic, title, line, n) {
+  const el = h('div', 'pfeat', parent, `<div class="pf-pic">${pic}<span class="pf-n">${n}</span></div><div class="pf-t">${title.map((t, j) => `<div class="o-row"><span${j ? ' class="lime"' : ''}>${t}</span></div>`).join('')}</div><div class="pf-l">${line}</div>`);
+  const rows = [...el.querySelectorAll('.o-row span')], ln = el.querySelector('.pf-l');
+  return { el, update(t, a, b) {
+    const on = t > a - .05 && t < b + .5; el.style.display = on ? '' : 'none'; if (!on) return false;
+    const k = spring(t, a, 1.1, .8), e = ease.inOutCubic(prog(t, b - .1, b + .45));
+    look(el, clamp(k * 2) * (1 - e), { x: (1 - k) * 760 - e * 760, ry: (1 - k) * -30 + e * 30, s: .93 + .07 * clamp(k) });
+    rows.forEach((r, j) => { const s0 = a + .3 + j * .1, q = ease.outExpo(prog(t, s0, s0 + .7)); look(r, Math.min(1, q * 1.5), `translateY(${((1 - q) * 105).toFixed(1)}%)`, (1 - q) * 6); });
+    const lq = ease.outExpo(prog(t, a + .55, a + 1.1)); look(ln, lq, `translateY(${((1 - lq) * 20).toFixed(1)}px)`);
+    return true; } };
+}
+function padelSolo(hud, mark) {
+  hud.style.setProperty('--acc', PAD.orange);
+  const bg = h('div', 'pbg', hud);
+  const stage = h('div', 'stagebox', hud);
+  const base = padelReel2(stage);
+
+  // ---- opening: a ball drops onto the court, the racket smashes it into the lens, the logo lands
+  const open = h('div', 'clash', hud);
+  const court = Court(open), oball = Ball(open), orack = Racket(open);
+  const rings = ['#D8EA48', '#C96A17'].map(c => { const r = h('div', 'cl-ring', open); r.style.borderColor = c; r.style.boxShadow = `0 0 60px ${c}, inset 0 0 60px ${c}`; return r; });
+  const oflash = h('div', 'cl-flash', open);
+  const osp = Array.from({ length: 30 }, (_, i) => { const e = h('div', 'cl-spark', open); const c = ['#D8EA48', '#F4FFB4', '#E8822C', '#fff'][i % 4]; e.style.background = c; e.style.boxShadow = `0 0 16px ${c}`; return { e, a: i / 30 * 6.283 + (i % 3) * .2, r: 260 + (i * 97) % 400 }; });
+  const ologo = h('div', 'tpl-mark tpl-big', open, `<img src="assets/padel/tpl-mark-centered.png">`);
+  const oname = Lines(open, ['The Padel Lounge'], { y: 1040, size: 104 });
+  const otag = Lines(open, ['*Where game meets lifestyle.*'], { y: 1180, size: 60 });
+  const osub = h('div', 'soon', open, `<b></b>Book your court online · Rachaya`);
+  const HIT = .45, OPEN = 3.0;
+
+  // ---- A · what players get around a booking
+  const aL = h('div', 'ep-label', hud, 'For players'); aL.style.top = '400px';
+  const WA = 'Hi! Court · Fri 27 · 18:00 · 1.5 h';
+  const perks = [
+    FeatCard(hud, `<div class="wa-chat"><div class="wa-in">Booking request ready</div><div class="wa-out"><span class="wa-t"></span><em>✓✓</em></div></div>`, ['One tap to', 'WhatsApp'], 'Your booking details, already written.', '01 / 03'),
+    FeatCard(hud, `<div class="inc">${[['Water', 'M9 2h6v3l2 3v12a2 2 0 01-2 2H9a2 2 0 01-2-2V8l2-3z'], ['Rackets', 'M12 2a6 6 0 016 6c0 4-3 6-4.5 7.5V22h-3v-6.5C9 14 6 12 6 8a6 6 0 016-6z'], ['Balls', 'M12 3a9 9 0 100 18 9 9 0 000-18zM5 7c3 2 3 8 0 10M19 7c-3 2-3 8 0 10']].map(([n, d]) => `<div class="inc-i"><svg viewBox="0 0 24 24"><path d="${d}"/></svg><b>${n}</b></div>`).join('')}</div>`, ['Just bring', 'your team'], 'Water, rackets and balls with every booking.', '02 / 03'),
+    FeatCard(hud, `<svg viewBox="0 0 300 300" width="300" height="300"><circle cx="150" cy="150" r="118" stroke="rgba(247,245,255,.12)" stroke-width="22" fill="none"/><circle class="pf-ring" cx="150" cy="150" r="118" stroke="#D8EA48" stroke-width="22" fill="none" stroke-linecap="round" transform="rotate(-90 150 150)" stroke-dasharray="741.4"/><text x="150" y="150" text-anchor="middle" fill="#F7F5FF" font-size="86" font-weight="600" font-family="Albert Sans">5h</text><text x="150" y="196" text-anchor="middle" fill="#D8EA48" font-size="26" font-weight="600" font-family="Albert Sans" letter-spacing="3">FREE COURT</text></svg>`, ['Play more,', 'earn free hours'], 'Every 5 hours played unlocks free court time.', '03 / 03'),
+  ];
+  const waT = perks[0].el.querySelector('.wa-t'), incs = [...perks[1].el.querySelectorAll('.inc-i')], pring = perks[2].el.querySelector('.pf-ring');
+
+  // ---- B · the rest of the dashboard
+  const bH = Lines(hud, ['Run the', '*whole venue.*'], { y: 250, size: 96 });
+  const ADM = [['Add a booking', 'Walk-ins and phone calls, in seconds.', `<div class="ad-plus">+</div>`], ['Court prices', 'Change rates and happy hours yourself.', `<div class="ad-price"><b>$20</b><span>Happy $15</span></div>`],
+    ['Customers', 'Every player and their history.', `<div class="ad-avs">${['K', 'L', 'O', 'N'].map((a, i) => `<i class="av av${i % 3}">${a}</i>`).join('')}</div>`], ['Partner clubs', 'Special rates for members.', `<div class="ad-tag">Partner rate</div>`]];
+  const tilesB = ADM.map(([t1, t2, art], i) => { const el = h('div', 'adt', hud, `${art}<b>${t1}</b><span>${t2}</span>`); el.style.left = (90 + (i % 2) * 460) + 'px'; el.style.top = (560 + Math.floor(i / 2) * 420) + 'px'; return el; });
+  const csv = h('div', 'ch-live', hud, `<b></b>Schedule, customers, rewards, prices`); csv.style.background = '#F7F5F1'; csv.style.color = '#16120D';
+
+  // ---- the call
+  const clogo = h('div', 'tpl-mark tpl-big', hud, `<img src="assets/padel/tpl-mark-centered.png">`);
+  const cta = Lines(hud, ['The court', '*is waiting.*'], { y: 900, size: 130 });
+  const cpill = h('div', 'site-pill', hud, `<span class="email-sheen"></span>tplrachaya.com<em class="live"><b></b>Book now</em>`);
+  const chours = h('div', 'soon', hud, `<b></b>Open daily · 12 PM – 3 AM`);
+
+  const outro = Outro(hud, mark, [['assets/padel/home-hero.png', '0 0'], ['assets/padel/book.png', '0 0'], ['assets/padel/home-court.png', '0 0'], ['assets/padel/home-gallery.png', '0 0'], ['assets/padel/home-pricing.png', '0 0'], ['assets/padel/01-floodlit-entrance-with-neon-tpl-sign.jpg', 'center']],
+    { heading: ['Want one for your business?', "*Let's talk.*"], tileClass: 'fin-padel' });
+  const wipe = BallWipe(hud);
+
+  // reel time ↔ the base reel's clock, with two pauses for the extra scenes
+  const A0 = 13.03, A1 = A0 + 4.3, B0 = A1 + 7.22, B1 = B0 + 4.1, C0 = B1 + 4.8, T0 = C0 + 2.9, DUR = +(T0 + 7.3).toFixed(2);
+  const baseAt = t => (t < A0 ? t + .25 : t < A1 ? null : t < B0 ? t - A1 + 13.28 : t < B1 ? null : t < C0 ? t - B1 + 20.5 : null);
+  const reelOf = x => (x < 3.3 ? null : x <= 13.28 ? x - .25 : x <= 20.5 ? x - 13.28 + A1 : x <= 25.3 ? x - 20.5 + B1 : null);
+  const cuts = [OPEN, 5.15, 9.3, A0, A1, B0, B1, C0, T0];
+  const PA = [A0 + .1, A0 + 1.5, A0 + 2.9], TB = [0, 1, 2, 3].map(i => B0 + .5 + i * .3);
+  const ev = { duration: DUR, style: 'jersey', clash: [HIT], slash: [], slam: [1.0], cuts, outro: [T0], lock: [outro.lockAt(T0)], cta: [outro.ctaAt(T0)], item: [...PA, ...TB], drop: [C0] };
+  for (const [k, v] of Object.entries(base.events)) {
+    if (['tick', 'whoosh', 'item', 'x', 'end', 'rise'].includes(k) || !Array.isArray(v) || typeof v[0] !== 'number') continue;
+    const w = v.map(reelOf).filter(x => x !== null && x > OPEN + .05).map(x => +x.toFixed(3)); if (w.length) ev[k] = (ev[k] || []).concat(w);
+  }
+  for (const s of base.events.item) { const r = reelOf(s); if (r) ev.item.push(+r.toFixed(3)); }
+  return {
+    DUR, events: ev, focus: t => outro.focus(t, T0),
+    update(t) {
+      look(bg, 1 - tw(t, T0 + .2, T0 + 1.2));
+      // ---- opening
+      const oOn = t < OPEN + .05; open.style.display = oOn ? '' : 'none';
+      if (oOn) {
+        const out = ease.inCubic(prog(t, OPEN - .3, OPEN));
+        court.update(t, 0, OPEN, lerp(.6, .2, tw(t, .85, 1.5)));
+        oball.update(t, x => (x < HIT ? { x: lerp(620, 540, x / HIT), y: lerp(-120, 880, ease.inCubic(x / HIT)), s: 1 } : x < .75 ? { x: 540, y: lerp(880, 800, prog(x, HIT, .75)), s: 1 + ease.inCubic(prog(x, HIT, .75)) * 26, o: 1 - prog(x, .6, .75) } : null));
+        const sw = tw(t, .28, .5, ease.inOutCubic);
+        orack.update(t, t < .9 ? { x: lerp(980, 720, sw), y: 1180, r: lerp(70, -40, sw), s: 1.3, o: prog(t, .1, .25) * (1 - prog(t, .6, .9)) } : null);
+        rings.forEach((r, i) => { const u = prog(t, HIT + i * .08, HIT + .7 + i * .08); look(r, u > 0 && u < 1 ? 1 - u : 0, `translate(540px,820px) translate(-50%,-50%) scale(${(.2 + ease.outCubic(u) * 4.2).toFixed(3)})`); });
+        look(oflash, bump(t, HIT - .04, HIT + .4));
+        osp.forEach(({ e, a, r }) => { const u = prog(t, HIT, HIT + .85), d = ease.outCubic(u) * r; look(e, u > 0 && u < 1 ? 1 - u * u : 0, `translate(${(540 + Math.cos(a) * d).toFixed(1)}px,${(820 + Math.sin(a) * d + u * u * 160).toFixed(1)}px) scale(${(1.2 - u * .6).toFixed(3)})`); });
+        const lk = ease.outExpo(prog(t, .62, .9));
+        look(ologo, clamp(lk * 3) * (1 - out), `translate(540px,740px) translate(-50%,-50%) scale(${(1 + (1 - lk) * 2.6 + out * 1.4).toFixed(3)})`, (1 - lk) * 16);
+        oname.update(t, 1.0, OPEN - .15); otag.update(t, 1.35, OPEN - .15);
+        const sk = ease.outExpo(prog(t, 1.75, 2.2)); look(osub, sk * (1 - out), `translate(540px,1330px) translate(-50%,-50%) translateY(${((1 - sk) * 20).toFixed(1)}px)`);
+      }
+      // ---- the base reel, paused for the two extra scenes
+      const bt = t >= OPEN - .02 ? baseAt(t) : null;
+      stage.style.display = bt === null ? 'none' : '';
+      if (bt !== null) base.update(bt);
+      // ---- A · player perks
+      const la = ease.outExpo(prog(t, A0, A0 + .5));
+      look(aL, la * (1 - prog(t, A1 - .25, A1)), `translateY(${((1 - la) * 16).toFixed(1)}px)`);
+      perks.forEach((p, i) => p.update(t, PA[i], i < 2 ? PA[i + 1] - .05 : A1 - .3));
+      waT.textContent = WA.slice(0, Math.round(prog(t, PA[0] + .35, PA[0] + 1.0) * WA.length));
+      incs.forEach((e, i) => look(e, prog(t, PA[1] + .25 + i * .12, PA[1] + .4 + i * .12), `scale(${ease.outBack(prog(t, PA[1] + .25 + i * .12, PA[1] + .6 + i * .12)).toFixed(3)})`));
+      pring.style.strokeDashoffset = (741.4 * (1 - tw(t, PA[2] + .3, PA[2] + 1.1, ease.outCubic))).toFixed(1);
+      // ---- B · the whole venue
+      bH.update(t, B0 + .05, B1 - .15);
+      tilesB.forEach((el, i) => { const k = spring(t, TB[i], 1.4, .65), e = ease.inCubic(prog(t, B1 - .35 + i * .03, B1 - .05 + i * .03)); el.style.display = t > B0 && t < B1 + .1 ? '' : 'none'; look(el, clamp(k * 2) * (1 - e), { y: (1 - k) * 300 - e * 80, rz: (1 - clamp(k)) * (i % 2 ? 8 : -8), s: .7 + .3 * clamp(k) }); });
+      const ck = spring(t, B0 + 1.9, 1.5, .62); look(csv, clamp(ck * 2) * (1 - prog(t, B1 - .3, B1)), `translate(540px,1440px) translate(-50%,-50%) scale(${(.8 + .2 * ck).toFixed(3)})`);
+      // ---- the call
+      const cOut = ease.inCubic(prog(t, T0 - .25, T0 + .05)), ck2 = ease.outExpo(prog(t, C0 + .05, C0 + .3));
+      look(clogo, clamp(ck2 * 3) * (t > C0 ? 1 : 0) * (1 - cOut), `translate(540px,600px) translate(-50%,-50%) scale(${(1 + (1 - ck2) * 2.4).toFixed(3)})`, (1 - ck2) * 14);
+      cta.update(t, C0 + .3, T0 - .1);
+      const pk = spring(t, C0 + .9, 1.5, .62); look(cpill, clamp(pk * 2) * (1 - cOut), `translate(540px,1270px) translate(-50%,-50%) scale(${(.8 + .2 * pk).toFixed(3)})`);
+      const hk = ease.outExpo(prog(t, C0 + 1.3, C0 + 1.8)); look(chours, hk * (1 - cOut), `translate(540px,1390px) translate(-50%,-50%)`);
+      outro.update(t, T0, DUR);
+      wipe.update(t, cuts);
+      const sh = Math.max(t >= HIT ? 1 - prog(t, HIT, HIT + .4) : 0, ...cuts.map(c => (t >= c ? 1 - prog(t, c, c + .2) : 0) * .5));
+      hud.style.transform = sh > .01 ? `translate(${(Math.sin(t * 95) * 14 * sh).toFixed(1)}px,${(Math.cos(t * 81) * 11 * sh).toFixed(1)}px)` : '';
+    },
+  };
+}
+
 // ------------------------------------------------------------------ build and render
 async function paintCards() {
   const logo = await loadCardAssets();
@@ -1146,7 +1268,7 @@ window.ready = (async () => {
   await document.fonts.ready;
   const hud = document.getElementById('hud');
   const mark = new Image(); mark.src = 'assets/r-mark.png'; await mark.decode();
-  const E = ep === 'teaser' ? teaser(hud, mark) : ep === 'discover' ? discoverReel(hud, mark, await paintCards()) : ep === 'padel' ? padelCollab(hud, mark) : ep === 'eagle-collab' ? eagleCollab(hud, mark) : ep === 'padel-v2' ? padelReel2(hud) : ep === 'padel-v1' ? padelReel(hud, mark) : ep === 'challenge' ? challengeReel(hud, mark) : stageEpisode(hud, ep, await paintCards());
+  const E = ep === 'teaser' ? teaser(hud, mark) : ep === 'discover' ? discoverReel(hud, mark, await paintCards()) : ep === 'padel' ? padelCollab(hud, mark) : ep === 'padel-solo' ? padelSolo(hud, mark) : ep === 'eagle-collab' ? eagleCollab(hud, mark) : ep === 'padel-v2' ? padelReel2(hud) : ep === 'padel-v1' ? padelReel(hud, mark) : ep === 'challenge' ? challengeReel(hud, mark) : stageEpisode(hud, ep, await paintCards());
   window.DURATION = E.DUR;
   window.EVENTS = { duration: E.DUR, ...E.events };
   window.render = t => {
