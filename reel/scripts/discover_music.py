@@ -1,5 +1,5 @@
 # The Discover reel's soundtrack: a bright, bouncy 122 BPM house track in D minor (Dm – Bb – F – C).
-#   intro   0 – 2.6   shimmering swell under the logo, a hit as the R locks
+#   intro   0 – 2.6   a hit on the first frame and the beat straight in (or, with a logo intro, a swell)
 #   verse   2.6 – 4.6 four-on-the-floor, offbeat hats, filtered chord stabs
 #   build   4.6 – 7.2 the chaos: filter opening, snare roll speeding up, a riser
 #   drop    7.2 – 13.6 everything: pumping chords, rolling bass, a chopped lead hook;
@@ -41,7 +41,7 @@ HOOK = [[74, None, 77, None, 76, 74, None, 72, 74, None, None, 69, None, 72, 74,
         [72, None, 74, None, 76, 77, None, 76, 74, None, None, 72, None, 69, 72, None],
         [72, None, 76, None, 79, 77, None, 76, 74, None, None, 76, None, 77, 79, None]]
 
-LOCK = (EV.get('lock') or [1.12])[0]; VERSE = 2.6; BUILD = 4.6; DROP = (EV.get('drop') or [7.2])[0]; BREAK = 13.6; END = (EV.get('end') or [16.0])[0]
+LOCK = (EV.get('lock') or [1.12])[0]; VERSE = float(EV.get('verse', 2.6)); BUILD = 4.6; DROP = (EV.get('drop') or [7.2])[0]; BREAK = 13.6; END = (EV.get('end') or [16.0])[0]
 def section(t):
     return 'intro' if t < VERSE else 'verse' if t < BUILD else 'build' if t < DROP else 'drop' if t < BREAK else 'break' if t < END else 'outro'
 
@@ -114,8 +114,9 @@ while t < DROP - .02:
     if t > DROP - BEAT * 2: step = BEAT / 4
     t += step
 # intro and outro colour
-t = tt(VERSE + .3); add(M, pad([50, 62, 65, 69, 74], len(t) / SR) * np.minimum(1, t / 1.4), 0, .22)
-for i, m in enumerate([86, 89, 93, 98, 93, 89]): add(M, bell(m, 1.3), .3 + i * .17, .05, -.5 + i * .2)
+if VERSE > 0:   # the slow swell under a logo intro; an opening that starts on the beat skips it
+    t = tt(VERSE + .3); add(M, pad([50, 62, 65, 69, 74], len(t) / SR) * np.minimum(1, t / 1.4), 0, .22)
+    for i, m in enumerate([86, 89, 93, 98, 93, 89]): add(M, bell(m, 1.3), .3 + i * .17, .05, -.5 + i * .2)
 fin = END + 2.6
 add(M, pad([50, 62, 65, 69, 74, 77], DUR - fin + .2, .05), fin, .25)
 for i, m in enumerate([74, 77, 81, 86, 89]): add(M, bell(m), fin + .1 + i * .2, .1, -.5 + i * .25)
@@ -144,6 +145,7 @@ for a, b in EV.get('riser', []): add(FX, riser(b - a), a, .45)
 for s in EV.get('drop', []): add(FX, impact(1.1, 34), s)
 for i, s in enumerate(EV.get('snaps', [])): add(FX, bell([74, 77, 81, 86, 89, 93][i % 6], .7), s + .3, .13, -.4 + i * .16)   # each answer rings the next note
 for s in EV.get('whoosh', []): add(FX, whoosh(.5), s - .25, .25)
+for s in EV.get('whoosh0', []): add(FX, whoosh(.6), s - .45, .35)   # the swell into the first question
 for s in EV.get('shimmer', []):
     for i, m in enumerate([93, 98, 101, 105]): add(FX, bell(m, 1.1), s + .15 + i * .28, .06, -.5 + i * .33)
 for s in EV.get('end', []): add(FX, impact(.9, 34), s); add(FX, bell(86, 1.4), s, .2)
