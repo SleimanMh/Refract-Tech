@@ -17,7 +17,7 @@ rnd = np.random.default_rng(7 if STYLE == 'jersey' else 11)
 BPM = 140 if STYLE == 'jersey' else 150
 B = 60 / BPM; BAR = 4 * B
 CLASH = EV['clash'][0]; OUT = EV['outro'][0]; LOCK = EV['lock'][0]; CTA = EV['cta'][0]
-START = 1.0                                   # the beat comes in on the name slam
+START = float(EV.get('start', 1.0))             # when the beat comes in
 M = np.zeros((2, N)); FX = np.zeros((2, N))
 
 def hz(m): return 440.0 * 2 ** ((m - 69) / 12)
@@ -179,7 +179,8 @@ add(FX, taiko(), CTA, .5)
 
 mix = M + FX
 tsec = np.arange(N) / SR
-mix *= np.clip(tsec / .01, 0, 1) * (1 - np.clip((tsec - (DUR - .9)) / .9, 0, 1) ** 1.5)
+FADE = .04 if EV.get('loop') else .9          # a looping reel runs straight back into its start
+mix *= np.clip(tsec / .01, 0, 1) * (1 - np.clip((tsec - (DUR - FADE)) / FADE, 0, 1) ** 1.5)
 mix = np.tanh(mix * 1.25) / np.tanh(1.25); mix /= np.max(np.abs(mix)) / .88
 with wave.open(os.path.join(DIR, 'music.wav'), 'wb') as w_:
     w_.setnchannels(2); w_.setsampwidth(2); w_.setframerate(SR); w_.writeframes((mix.T * 32767).astype('<i2').tobytes())
