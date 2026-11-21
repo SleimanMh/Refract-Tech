@@ -4,7 +4,7 @@
 #   build   4.6 – 7.2 the chaos: filter opening, snare roll speeding up, a riser
 #   drop    7.2 – 13.6 everything: pumping chords, rolling bass, a chopped lead hook;
 #                      each note snapping into the plan plays the next note of an arpeggio
-#   break   13.6 – 16  the lens: chords and air
+#   (break) none by default: the drop carries on under the lens at full energy (events 'break' brings one back)
 #   outro   16 – 20    the contact card: the hook returns, then a final chord rings out
 #   python3 scripts/discover_music.py out/series/discover2
 import json, os, sys, wave
@@ -41,7 +41,7 @@ HOOK = [[74, None, 77, None, 76, 74, None, 72, 74, None, None, 69, None, 72, 74,
         [72, None, 74, None, 76, 77, None, 76, 74, None, None, 72, None, 69, 72, None],
         [72, None, 76, None, 79, 77, None, 76, 74, None, None, 76, None, 77, 79, None]]
 
-LOCK = (EV.get('lock') or [1.12])[0]; VERSE = float(EV.get('verse', 2.6)); BUILD = 4.6; DROP = (EV.get('drop') or [7.2])[0]; BREAK = 13.6; END = (EV.get('end') or [16.0])[0]
+LOCK = (EV.get('lock') or [1.12])[0]; VERSE = float(EV.get('verse', 2.6)); BUILD = 4.6; DROP = (EV.get('drop') or [7.2])[0]; BREAK = float(EV.get('break', 16.0)); END = (EV.get('end') or [16.0])[0]
 def section(t):
     return 'intro' if t < VERSE else 'verse' if t < BUILD else 'build' if t < DROP else 'drop' if t < BREAK else 'break' if t < END else 'outro'
 

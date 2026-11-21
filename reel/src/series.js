@@ -366,7 +366,7 @@ function IdeaHook(parent) {
   }
   const last = h('div', 'idea idea-last', root);
   const words = h('div', 'ideas-words', parent);
-  const head = Lines(words, tr(['Most ideas', '*never get built.*'], ['أغلب الأفكار', '*لا ترى النور.*']), { y: 700, size: 124 });
+  const head = Lines(words, tr(['Most ideas', '*never get built.*'], ['فكرة بلا خطة…', '*مجرد حلم.*']), { y: 700, size: AR ? 140 : 124 });
   const flash = h('div', 'idea-flash', root);
   return {
     focus: t => (t < 2.65 ? { x: 540, y: 1400, r: 420 + 700 * tw(t, 2.0, 2.6, ease.inCubic), a: .35 + .45 * tw(t, 1.9, 2.55) } : null),
