@@ -108,6 +108,10 @@ var alpha = (hex, a) => {
   return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`;
 };
 var FONT = '"Albert Sans", ui-sans-serif, system-ui, sans-serif';
+// Arabic: setArabic(dict) paints the cards right to left, with each English string looked up in dict.
+var AR = null;
+var ARFONT = '"IBM Plex Sans Arabic", "Albert Sans", sans-serif';
+function setArabic(dict) { AR = dict; }
 var HEAD = {
   discover: ["From question", "to clear plan.", "Goals, users and a prioritised roadmap."],
   design: ["From vision", "to interface.", "Journeys, interfaces and interactions."],
@@ -126,6 +130,19 @@ function rr(g, x, y, w, h, r) {
   g.closePath();
 }
 function text(g, s, x, y, size, color = INK, weight = 300, spacing = 0) {
+  if (AR) {
+    // the geometry is mirrored; the words are drawn unmirrored, right-aligned where the English would start
+    g.save();
+    g.setTransform(2, 0, 0, 2, 0, 0);
+    g.font = `${weight} ${size}px ${ARFONT}`;
+    g.fillStyle = color;
+    g.direction = "rtl";
+    g.textAlign = "right";
+    g.letterSpacing = "0px";
+    g.fillText(AR[s] ?? s, W - x, y);
+    g.restore();
+    return;
+  }
   g.font = `${weight} ${size}px ${FONT}`;
   g.fillStyle = color;
   g.letterSpacing = `${spacing}px`;
@@ -224,6 +241,30 @@ function base(g, logo, label, head) {
   g.fillStyle = sheen;
   g.fill();
   let lx = PAD;
+  if (AR) {
+    // the mark sits on the right and the name, still in Latin, reads left to right beside it
+    g.save();
+    g.setTransform(2, 0, 0, 2, 0, 0);
+    if (logo && logo.complete && logo.naturalWidth) {
+      const h = 50, w = h * logo.naturalWidth / logo.naturalHeight;
+      g.drawImage(logo, W - PAD - w, 62, w, h);
+      lx += w + 16;
+    }
+    g.font = `500 36px ${FONT}`;
+    g.letterSpacing = "-0.5px";
+    g.textAlign = "right";
+    g.fillStyle = BRAND.coral;
+    g.fillText("Tech", W - lx, 103);
+    g.fillStyle = INK;
+    g.fillText("Refract", W - lx - g.measureText("Tech").width - 10, 103);
+    g.letterSpacing = "0px";
+    g.restore();
+    text(g, label, PAD, 196, 19, "rgba(247,245,255,.6)", 500, 6);
+    text(g, head[0], PAD, 284, 72, INK, 300, -1);
+    text(g, head[1], PAD, 364, 72, ACC, 300, -1);
+    text(g, head[2], PAD, 424, 27, SOFT, 300);
+    return;
+  }
   if (logo && logo.complete && logo.naturalWidth) {
     const h = 50;
     const w = h * logo.naturalWidth / logo.naturalHeight;
@@ -283,8 +324,8 @@ function footer(g, items, link, y) {
   g.lineTo(W - PAD, ly);
   stroke(g, LINE, 2);
   text(g, link, PAD + 4, ly + 58, 26, ACC, 400);
-  g.font = `400 26px ${FONT}`;
-  const tw = g.measureText(link).width;
+  g.font = AR ? `400 26px ${ARFONT}` : `400 26px ${FONT}`;
+  const tw = g.measureText(AR ? AR[link] ?? link : link).width;
   g.beginPath();
   g.moveTo(PAD + tw + 22, ly + 60);
   g.lineTo(PAD + tw + 40, ly + 42);
@@ -506,6 +547,7 @@ var CARD_W = W;
 var CARD_H = H;
 function paintCard(g, key, logo) {
   readPalette();
+  if (AR) g.setTransform(-2, 0, 0, 2, W * 2, 0);
   if (key === "final") finalCard(g, logo);
   else stageCard(g, logo, ART_KEYS.indexOf(key));
 }
@@ -516,10 +558,11 @@ function loadCardAssets() {
     logo.onerror = () => res();
     logo.src = r_mark_default;
   });
-  const fonts = document.fonts ? Promise.all(["300 72px", "400 29px", "500 36px", "500 19px"].map((f) => document.fonts.load(`${f} "Albert Sans"`))) : Promise.resolve();
+  const fonts = document.fonts ? Promise.all(["300 72px", "400 29px", "500 36px", "500 19px"].map((f) => document.fonts.load(`${f} "Albert Sans"`)).concat(AR ? ["300 72px", "400 26px", "500 19px"].map((f) => document.fonts.load(`${f} "IBM Plex Sans Arabic"`, "\u0627\u0628")) : [])) : Promise.resolve();
   return Promise.all([img, fonts]).then(() => logo, () => logo);
 }
 export {
+  setArabic,
   ART_KEYS,
   CARD_H,
   CARD_W,

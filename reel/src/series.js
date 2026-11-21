@@ -2,12 +2,25 @@
 // episode per stage of the process. Each asks the viewer a question about their website or their
 // business, shows that stage's card from the website, and ends on the email address.
 // Open series.html?ep=teaser | discover | design | build | connect | launch | evolve.
-import { ART_KEYS, CARD_H, CARD_W, loadCardAssets, paintCard } from '../assets/cardArt-series.js';
+import { ART_KEYS, CARD_H, CARD_W, loadCardAssets, paintCard, setArabic } from '../assets/cardArt-series.js';
 import { box, bump, clamp, ease, h, lerp, look, prog, spring, track, tw } from './lib.js';
 import { C, ICON, Sky } from './ui.js';
 import { Hook } from './scenes.js';
 
 const EMAIL = 'refract@refract-tech.com';
+// ?lang=ar: the Discover reel in Arabic, right to left. tr(english, arabic) picks the words.
+const AR = new URLSearchParams(location.search).get('lang') === 'ar';
+const tr = (en, ar) => (AR ? ar : en);
+if (AR) {
+  document.documentElement.lang = 'ar'; document.documentElement.dir = 'rtl';
+  setArabic({   // the website's Discover card
+    '01 / DISCOVER': '01 / الاكتشاف', 'From question': 'من السؤال', 'to clear plan.': 'إلى خطة واضحة.',
+    'Goals, users and a prioritised roadmap.': 'الأهداف والمستخدمون وخارطة طريق بالأولويات.',
+    Goals: 'الأهداف', 'Who it is for': 'لمن المنتج', 'What success means': 'معنى النجاح', 'Must haves': 'الأساسيات', Constraints: 'القيود',
+    Roadmap: 'خارطة الطريق', 'Goals and requirements': 'الأهداف والمتطلبات', 'Product scope': 'نطاق المنتج', 'Delivery roadmap': 'خطة التسليم',
+    'Explore the discover stage': 'اكتشف مرحلة الاكتشاف',
+  });
+}
 
 // ------------------------------------------------------------------ the scripts
 // [lines, in, out]; *words* take the accent and an underline.
@@ -92,7 +105,7 @@ function StageCard(parent, cv, accent) {
       look(sheen, bump(t, tin + .8, tin + 1.6), `translateX(${(-130 + sw * 260).toFixed(1)}%) rotate(16deg)`);
     },
     /** push in on the card's goals checklist (0 = whole card, 1 = close up) */
-    zoom(z) { cv.style.transformOrigin = '33% 56%'; cv.style.transform = `scale(${(1 + .75 * z).toFixed(4)})`; },
+    zoom(z) { cv.style.transformOrigin = AR ? '67% 56%' : '33% 56%'; cv.style.transform = `scale(${(1 + .75 * z).toFixed(4)})`; },
   };
 }
 
@@ -284,7 +297,10 @@ function teaser(hud, mark) {
 // The logo builds; a question; the messy questions every new idea brings swarm around; on the drop
 // each one flips to its answer and snaps into a clean plan; the site's Discover card turns in and
 // the camera dives into its goals; a lens sweeps the blur off "Clarity first."; the contact close.
-const CHAOS = [
+const CHAOS = AR ? [
+  ['لمن المشروع؟', 'العملاء المستهدفون', 290, 700, -7], ['الميزانية؟', 'ميزانية محددة', 820, 640, 6], ['أي ميزات؟', 'الميزات الأساسية', 330, 960, 4],
+  ['الجدول الزمني؟', 'خارطة طريق مرحلية', 820, 900, -5], ['من أين نبدأ؟', 'خطوة أولى واضحة', 380, 1240, -3], ['المنافسون؟', 'دراسة السوق', 800, 1170, 7],
+] : [
   ["Who's it for?", 'Target customers', 290, 700, -7], ['Budget?', 'Scoped budget', 820, 640, 6], ['Which features?', 'Must-have features', 330, 960, 4],
   ['Timeline?', 'Phased roadmap', 820, 900, -5], ['Where to start?', 'A clear first step', 380, 1240, -3], ['Competitors?', 'Market check', 800, 1170, 7],
 ];
@@ -324,7 +340,8 @@ function Lens(parent, lines, y) {
       const show = prog(t, tin, tin + .3) * (1 - prog(t, tout - .2, tout + .2));
       el.style.opacity = show.toFixed(3);
       const u = tw(t, tin + .15, tin + 1.25, ease.inOutSine);
-      const lx = 120 + u * 840, ly = 120 + Math.sin(u * Math.PI * 2) * 70;
+      const lx = AR ? 960 - u * 840 : 120 + u * 840,   // the lens reads in the script's direction
+       ly = 120 + Math.sin(u * Math.PI * 2) * 70;
       const R = 150 + 1200 * tw(t, tin + 1.25, tin + 1.75, ease.inOutCubic);
       const mask = `radial-gradient(circle at ${lx.toFixed(0)}px ${ly.toFixed(0)}px, #000 ${R.toFixed(0)}px, transparent ${(R + 50).toFixed(0)}px)`;
       sharp.style.webkitMaskImage = sharp.style.maskImage = mask;
@@ -349,7 +366,7 @@ function IdeaHook(parent) {
   }
   const last = h('div', 'idea idea-last', root);
   const words = h('div', 'ideas-words', parent);
-  const head = Lines(words, ['Most ideas', '*never get built.*'], { y: 700, size: 124 });
+  const head = Lines(words, tr(['Most ideas', '*never get built.*'], ['أغلب الأفكار', '*لا ترى النور.*']), { y: 700, size: 124 });
   const flash = h('div', 'idea-flash', root);
   return {
     focus: t => (t < 2.65 ? { x: 540, y: 1400, r: 420 + 700 * tw(t, 2.0, 2.6, ease.inCubic), a: .35 + .45 * tw(t, 1.9, 2.55) } : null),
@@ -377,7 +394,7 @@ function NextUp(parent, heading, step, name) {
   const head = Lines(root, heading, { y: 560, size: 108 });
   const pill = h('div', 'email', root, `<span class="email-sheen"></span><i>${ICON.mail}</i><span class="e-txt"></span>`);
   const icon = pill.querySelector('i'), txt = pill.querySelector('.e-txt'), pSheen = pill.querySelector('.email-sheen');
-  const nx = h('div', 'nx', root, `<div class="nx-l">Next · Step 0${step} <b>${name}</b></div><div class="nx-r">${[1, 2, 3, 4, 5, 6].map(i => `<i class="${i < step ? 'on' : i === step ? 'go' : ''}"></i>`).join('')}</div><div class="nx-f">Follow so you don't miss it</div>`);
+  const nx = h('div', 'nx', root, `<div class="nx-l">${tr('Next · Step', 'التالي · الخطوة')} 0${step} <b>${name}</b></div><div class="nx-r">${[1, 2, 3, 4, 5, 6].map(i => `<i class="${i < step ? 'on' : i === step ? 'go' : ''}"></i>`).join('')}</div><div class="nx-f">${tr("Follow so you don't miss it", 'تابعنا كي لا يفوتك')}</div>`);
   const segs = [...nx.querySelectorAll('.nx-r i')];
   return {
     update(t, tin) {
@@ -407,19 +424,19 @@ function discoverReel(hud, mark, cards) {
   hud.style.setProperty('--acc', acc);
   const intro = IdeaHook(hud);
   const num = Backdrop(hud, '01');
-  const tag = h('div', 'ep-tag', hud, `<b></b>Refract Tech · Step 01 / 06`);
-  const q1 = Lines(hud, ['Have a business idea', '*but no clear plan?*'], { y: 760 });
-  const fam = Lines(hud, ['Sound *familiar?*'], { y: 300, size: 84 });
-  const plan = h('div', 'plan', hud, `<div class="plan-h"><span>Your discovery plan</span><em>Step 01</em></div>`);
-  const planLine = Lines(hud, ['We turn the chaos into', '*a clear, scoped plan.*'], { y: 300, size: 78 });
+  const tag = h('div', 'ep-tag', hud, `<b></b>${tr('Refract Tech · Step 01 / 06', '<span dir="ltr">Refract Tech</span> · الخطوة 01 / 06')}`);
+  const q1 = Lines(hud, tr(['Have a business idea', '*but no clear plan?*'], ['لديك فكرة مشروع', '*لكن بلا خطة واضحة؟*']), { y: 760 });
+  const fam = Lines(hud, tr(['Sound *familiar?*'], ['هل يبدو هذا *مألوفاً؟*']), { y: 300, size: 84 });
+  const plan = h('div', 'plan', hud, `<div class="plan-h"><span>${tr('Your discovery plan', 'خطة الاكتشاف')}</span><em>${tr('Step 01', 'الخطوة 01')}</em></div>`);
+  const planLine = Lines(hud, tr(['We turn the chaos into', '*a clear, scoped plan.*'], ['نحوّل الفوضى إلى', '*خطة واضحة ومحددة.*']), { y: 300, size: 78 });
   const notes = CHAOS.map(([q, a, x, y, r], i) => Note(hud, q, a, x, y, r, i));
   const SNAP = CHAOS.map((_, i) => 7.7 + i * .25), CHAOS_IN = CHAOS.map((_, i) => 4.75 + i * .16);
-  const label = h('div', 'ep-label', hud, 'Step 01 · Discover');
-  const msg = Lines(hud, ['Goals, users and', '*a prioritised roadmap.*'], { y: 330, size: 80 });
+  const label = h('div', 'ep-label', hud, tr('Step 01 · Discover', 'الخطوة 01 · الاكتشاف'));
+  const msg = Lines(hud, tr(['Goals, users and', '*a prioritised roadmap.*'], ['الأهداف والمستخدمون', '*وخطة بالأولويات.*']), AR ? { y: 285, size: 72 } : { y: 330, size: 80 });
   const card = StageCard(hud, cards[0], acc);
-  const lens = Lens(hud, ['Clarity first.', '*Then we build.*'], 780);
+  const lens = Lens(hud, tr(['Clarity first.', '*Then we build.*'], ['الوضوح أولاً.', '*ثم نبني.*']), 780);
   const scan = h('div', 'scan', hud);
-  const end = NextUp(hud, ['Got an idea?', "*Let's plan it together.*"], 2, 'Design');
+  const end = NextUp(hud, tr(['Got an idea?', "*Let's plan it together.*"], ['لديك فكرة؟', '*لنخطط لها معاً.*']), 2, tr('Design', 'التصميم'));
   const CARD = 10.05;
   return {
     DUR, focus: t => intro.focus(t),
@@ -1333,6 +1350,7 @@ const ep = new URLSearchParams(location.search).get('ep') || 'teaser';
 const sky = Sky(document.getElementById('sky'));
 window.ready = (async () => {
   await document.fonts.ready;
+  if (AR) await Promise.all(['400', '500', '600', '700'].map(w => document.fonts.load(`${w} 100px "IBM Plex Sans Arabic"`, 'اب')));
   const hud = document.getElementById('hud');
   const mark = new Image(); mark.src = 'assets/r-mark.png'; await mark.decode();
   const E = ep === 'teaser' ? teaser(hud, mark) : ep === 'discover' ? discoverReel(hud, mark, await paintCards()) : ep === 'padel' ? padelCollab(hud, mark) : ep === 'padel-solo' ? padelSolo(hud, mark) : ep === 'eagle-collab' ? eagleCollab(hud, mark) : ep === 'padel-v2' ? padelReel2(hud) : ep === 'padel-v1' ? padelReel(hud, mark) : ep === 'challenge' ? challengeReel(hud, mark) : stageEpisode(hud, ep, await paintCards());

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>Meet Refract Tech — reels</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=block">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=block">
 <style>
 /* "Meet Refract Tech" reels: 1080 × 1920; every frame is set by window.render(t). */
 :root { --navy:#11112B; --violet:#713DE8; --purple:#B66CFA; --coral:#FF906B; --white:#F7F5FF; --ink2:#CFCAE8; --ink3:#9A94BF; }
@@ -303,6 +303,14 @@ svg { display:block; }
 .nx-r i::after { content:""; position:absolute; inset:0; border-radius:6px; background:linear-gradient(90deg,var(--acc),#FF906B); transform:scaleX(var(--f,0)); transform-origin:left; }
 .nx-r i.go { box-shadow:0 0 0 2px rgba(255,144,107,calc(.4 + .6 * var(--p,0))), 0 0 calc(24px * var(--p,0)) rgba(255,144,107,.8); }
 .nx-f { font-size:36px; font-weight:500; letter-spacing:.1em; color:var(--ink3); }
+
+/* Arabic (?lang=ar): its own type, no letter-spacing (it breaks the joins), taller lines for the marks */
+html[lang=ar] body { font-family:"IBM Plex Sans Arabic","Albert Sans",sans-serif; }
+html[lang=ar] #hud * { letter-spacing:0 !important; text-transform:none !important; }
+html[lang=ar] .lrow { line-height:1.5; padding-bottom:.08em; }
+html[lang=ar] .lrow2 { line-height:1.55; }
+html[lang=ar] .acc::after { transform-origin:right; bottom:.06em; }
+html[lang=ar] .email .e-txt { direction:ltr; unicode-bidi:isolate; }
 </style>
 </head>
 <body>
