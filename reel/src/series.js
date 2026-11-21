@@ -9,11 +9,19 @@ import { Hook } from './scenes.js';
 
 const EMAIL = 'refract@refract-tech.com';
 // ?lang=ar: the Discover reel in Arabic, right to left. tr(english, arabic) picks the words.
-const AR = new URLSearchParams(location.search).get('lang') === 'ar';
-const tr = (en, ar) => (AR ? ar : en);
+// ?lang=lb: the same in Lebanese Arabic, opening on three everyday pains instead of the lights.
+const LANG = new URLSearchParams(location.search).get('lang');
+const LB = LANG === 'lb', AR = LANG === 'ar' || LB;
+const tr = (en, ar, lb = ar) => (LB ? lb : AR ? ar : en);
 if (AR) {
   document.documentElement.lang = 'ar'; document.documentElement.dir = 'rtl';
-  setArabic({   // the website's Discover card
+  setArabic(LB ? {   // the website's Discover card, in Lebanese
+    '01 / DISCOVER': '01 / الاكتشاف', 'From question': 'من السؤال', 'to clear plan.': 'لخطة واضحة.',
+    'Goals, users and a prioritised roadmap.': 'أهدافك، زبايِنك، وخطة بالأولويات.',
+    Goals: 'الأهداف', 'Who it is for': 'لمين المنتج', 'What success means': 'شو يعني النجاح', 'Must haves': 'الأساسيات', Constraints: 'الحدود',
+    Roadmap: 'خطة الطريق', 'Goals and requirements': 'الأهداف والمتطلبات', 'Product scope': 'شو بدّو يعمل المنتج', 'Delivery roadmap': 'خطة التسليم',
+    'Explore the discover stage': 'شوف مرحلة الاكتشاف',
+  } : {   // the website's Discover card
     '01 / DISCOVER': '01 / الاكتشاف', 'From question': 'من السؤال', 'to clear plan.': 'إلى خطة واضحة.',
     'Goals, users and a prioritised roadmap.': 'الأهداف والمستخدمون وخارطة طريق بالأولويات.',
     Goals: 'الأهداف', 'Who it is for': 'لمن المنتج', 'What success means': 'معنى النجاح', 'Must haves': 'الأساسيات', Constraints: 'القيود',
@@ -297,7 +305,10 @@ function teaser(hud, mark) {
 // The logo builds; a question; the messy questions every new idea brings swarm around; on the drop
 // each one flips to its answer and snaps into a clean plan; the site's Discover card turns in and
 // the camera dives into its goals; a lens sweeps the blur off "Clarity first."; the contact close.
-const CHAOS = AR ? [
+const CHAOS = LB ? [
+  ['لمين المشروع؟', 'الزباين المستهدفين', 290, 700, -7], ['قدّيش الميزانية؟', 'ميزانية واضحة', 820, 640, 6], ['شو الميزات؟', 'الميزات الأساسية', 330, 960, 4],
+  ['إيمتى منخلّص؟', 'خطة على مراحل', 820, 900, -5], ['من وين منبلّش؟', 'أوّل خطوة واضحة', 380, 1240, -3], ['مين المنافسين؟', 'دراسة السوق', 800, 1170, 7],
+] : AR ? [
   ['لمن المشروع؟', 'العملاء المستهدفون', 290, 700, -7], ['الميزانية؟', 'ميزانية محددة', 820, 640, 6], ['أي ميزات؟', 'الميزات الأساسية', 330, 960, 4],
   ['الجدول الزمني؟', 'خارطة طريق مرحلية', 820, 900, -5], ['من أين نبدأ؟', 'خطوة أولى واضحة', 380, 1240, -3], ['المنافسون؟', 'دراسة السوق', 800, 1170, 7],
 ] : [
@@ -394,7 +405,7 @@ function NextUp(parent, heading, step, name) {
   const head = Lines(root, heading, { y: 560, size: 108 });
   const pill = h('div', 'email', root, `<span class="email-sheen"></span><i>${ICON.mail}</i><span class="e-txt"></span>`);
   const icon = pill.querySelector('i'), txt = pill.querySelector('.e-txt'), pSheen = pill.querySelector('.email-sheen');
-  const nx = h('div', 'nx', root, `<div class="nx-l">${tr('Next · Step', 'التالي · الخطوة')} 0${step} <b>${name}</b></div><div class="nx-r">${[1, 2, 3, 4, 5, 6].map(i => `<i class="${i < step ? 'on' : i === step ? 'go' : ''}"></i>`).join('')}</div><div class="nx-f">${tr("Follow so you don't miss it", 'تابعنا كي لا يفوتك')}</div>`);
+  const nx = h('div', 'nx', root, `<div class="nx-l">${tr('Next · Step', 'التالي · الخطوة', 'الجاية · الخطوة')} 0${step} <b>${name}</b></div><div class="nx-r">${[1, 2, 3, 4, 5, 6].map(i => `<i class="${i < step ? 'on' : i === step ? 'go' : ''}"></i>`).join('')}</div><div class="nx-f">${tr("Follow so you don't miss it", 'تابعنا كي لا يفوتك', 'تابعنا تَ ما يفوتك')}</div>`);
   const segs = [...nx.querySelectorAll('.nx-r i')];
   return {
     update(t, tin) {
@@ -419,34 +430,107 @@ function NextUp(parent, heading, step, name) {
   };
 }
 
+/** The Lebanese opening: three everyday pains, each with its picture. Paper and pen (sheets piling up
+ *  round a racing clock), Excel (a sheet filling with numbers, then breaking into errors), and a growing
+ *  business (bars rising under the questions that swarm in, which the drop then sorts into the plan).
+ *  The words are up from the first frame. */
+function PainOpen(parent) {
+  const root = h('div', 'pains', parent);
+  const P = [
+    [['شغل الورقة والقلم', '*عم يضيّعلك وقتك؟*'], -.62, 2.4],
+    [['بعدك عم تستعمل Excel', '*لتربط شغلك وحساباتك؟*'], 2.45, 4.8],
+    [['مصلحتك عم تكبر', '*وبدّك شي ينظّملك كل شي؟*'], 4.85, 7.15],
+  ].map(([l, a, b]) => ({ L: Lines(root, l, { y: 290, size: 96 }), a, b }));
+  const R = (i, k) => { const x = Math.sin(i * 91.7 + k * 47.3) * 43758.5453; return x - Math.floor(x); };
+  // 1 · paper and pen
+  const ticks = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(i => `<line x1="100" y1="22" x2="100" y2="${i % 3 ? 30 : 38}" transform="rotate(${i * 30} 100 100)"/>`).join('');
+  const clock = h('div', 'pclock', root, `<svg viewBox="0 0 200 200" width="230" height="230"><circle cx="100" cy="100" r="88" fill="rgba(17,17,43,.85)" stroke="#FF906B" stroke-width="7"/><g stroke="rgba(247,245,255,.5)" stroke-width="4">${ticks}</g><line class="hh" x1="100" y1="100" x2="100" y2="58" stroke="#F7F5FF" stroke-width="8" stroke-linecap="round"/><line class="mh" x1="100" y1="100" x2="100" y2="30" stroke="#FF906B" stroke-width="5" stroke-linecap="round"/><circle cx="100" cy="100" r="8" fill="#F7F5FF"/></svg>`);
+  const hh = clock.querySelector('.hh'), mh = clock.querySelector('.mh');
+  const SPOTS = [[230, 760, -14], [850, 800, 11], [190, 1180, 8], [880, 1230, -9], [330, 1520, 16], [760, 1560, -18], [540, 1420, 4]];
+  const papers = SPOTS.map(([x, y, r], i) => {
+    const lines = [0, 1, 2, 3, 4, 5].map(k => { const yy = 62 + k * 36, w = 90 + R(i, k) * 90; return `<path d="M44 ${yy} q${w / 4} ${-8 - R(i, k + 9) * 6} ${w / 2} 0 t${w / 2} 0" fill="none" stroke="#3A3666" stroke-width="3" stroke-linecap="round"/>`; }).join('');
+    const e = h('div', 'paper', root, `<svg viewBox="0 0 220 290" width="220" height="290">${lines}</svg>`);
+    return { e, x, y, r, at: i * .1 };
+  });
+  // 2 · Excel
+  const COLS = 6, ROWS = 8;
+  const sheet = h('div', 'xsheet', root);
+  const cells = [];
+  h('div', 'hd', sheet, '');
+  'ABCDEF'.split('').forEach(c => h('div', 'hd', sheet, c));
+  for (let r = 0; r < ROWS; r++) {
+    h('div', 'hd', sheet, String(r + 1));
+    for (let c = 0; c < COLS; c++) {
+      const v = c === 0 ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'][r] : (Math.round(R(r, c) * 9000) + 120).toLocaleString('en-US');
+      cells.push({ el: h('div', 'xc', sheet, ''), v, i: r * COLS + c });
+    }
+  }
+  const ERR = [[9, '#REF!'], [16, '#VALUE!'], [22, '#REF!'], [29, '#N/A'], [35, '#DIV/0!'], [40, '#REF!'], [46, '#VALUE!']].map(([i, s], k) => ({ ...cells[i], s, at: 3.35 + k * .13 }));
+  // 3 · the business growing: bars rising behind the questions
+  const grow = h('div', 'pgrow', root, [0, 1, 2, 3, 4, 5, 6].map(() => '<i></i>').join(''));
+  const bars = [...grow.children];
+  return {
+    focus: () => null,
+    update(t) {
+      const on = t < 7.4; root.style.display = on ? '' : 'none'; if (!on) return;
+      P.forEach(({ L, a, b }) => L.update(t, a, b));
+      // paper and pen: sheets drop in and pile up round a racing clock; they scatter on the cut
+      const out1 = ease.inCubic(prog(t, 2.1, 2.5));
+      papers.forEach(({ e }) => { e.style.display = t < 2.52 ? '' : 'none'; }); clock.style.display = t < 2.52 ? '' : 'none';
+      papers.forEach(({ e, x, y, r, at }, i) => {
+        const k = spring(t, at, 1.6, .55), wob = Math.sin(t * 2.2 + i) * 3, side = i % 2 ? 1 : -1;
+        look(e, clamp(k * 3) * (1 - prog(t, 2.35, 2.5)), `translate(${(x + side * out1 * 500).toFixed(1)}px,${(y - (1 - k) * 900 + out1 * 700).toFixed(1)}px) translate(-50%,-50%) rotate(${(r + wob + (1 - clamp(k)) * 40 + out1 * side * 60).toFixed(2)}deg)`);
+      });
+      const ck = spring(t, .15, 1.5, .5);
+      look(clock, clamp(ck * 2) * (1 - out1), `translate(540px,1020px) translate(-50%,-50%) scale(${(.6 + .4 * ck + .06 * Math.sin(t * 9) + out1 * .6).toFixed(3)})`);
+      hh.setAttribute('transform', `rotate(${(t * 360).toFixed(1)} 100 100)`); mh.setAttribute('transform', `rotate(${(t * 2600).toFixed(1)} 100 100)`);
+      // Excel: the sheet slides up and fills, then errors break out across it
+      sheet.style.display = t > 2.35 && t < 4.95 ? '' : 'none';
+      const sk = spring(t, 2.45, 1.4, .7), out2 = ease.inCubic(prog(t, 4.55, 4.85));
+      const shake = ERR.reduce((m, e) => m + bump(t, e.at - .02, e.at + .12), 0);
+      look(sheet, clamp(sk * 2) * (1 - out2), `translate(${(Math.sin(t * 70) * 10 * shake).toFixed(1)}px,${((1 - sk) * 300 + out2 * 200).toFixed(1)}px) rotate(${(-2 * (1 - clamp(sk)) + out2 * 4).toFixed(2)}deg) scale(${(1 - out2 * .15).toFixed(3)})`, out2 * 10);
+      cells.forEach(c => { if (c.el.classList.contains('err')) return; const txt = t > 2.7 + c.i * .012 ? c.v : ''; if (c.el.textContent !== txt) c.el.textContent = txt; });
+      ERR.forEach(e => {
+        const bad = t > e.at; e.el.classList.toggle('err', bad);
+        const txt = bad ? e.s : t > 2.7 + e.i * .012 ? e.v : '';
+        if (e.el.textContent !== txt) e.el.textContent = txt;
+        e.el.style.transform = `scale(${(1 + .25 * bump(t, e.at - .02, e.at + .2)).toFixed(3)})`;
+      });
+      // growing: bars rise one by one under the swarm of questions
+      look(grow, prog(t, 4.85, 5.1) * (1 - prog(t, 6.95, 7.2)) * .55);
+      bars.forEach((b, i) => { b.style.transform = `scaleY(${(.15 + .85 * ease.outCubic(prog(t, 4.9 + i * .18, 5.5 + i * .18)) * (.3 + i * .1)).toFixed(3)})`; });
+    },
+  };
+}
+
 function discoverReel(hud, mark, cards) {
   const DUR = 20.0, acc = C.stages[0];
   hud.style.setProperty('--acc', acc);
-  const intro = IdeaHook(hud);
-  const num = Backdrop(hud, '01');
-  const tag = h('div', 'ep-tag', hud, `<b></b>${tr('Refract Tech · Step 01 / 06', '<span dir="ltr">Refract Tech</span> · الخطوة 01 / 06')}`);
-  const q1 = Lines(hud, tr(['Have a business idea', '*but no clear plan?*'], ['لديك فكرة مشروع', '*لكن بلا خطة واضحة؟*']), { y: 760 });
-  const fam = Lines(hud, tr(['Sound *familiar?*'], ['هل يبدو هذا *مألوفاً؟*']), { y: 300, size: 84 });
+  const intro = LB ? PainOpen(hud) : IdeaHook(hud);
+  const num = LB ? null : Backdrop(hud, '01');
+  const tag = LB ? null : h('div', 'ep-tag', hud, `<b></b>${tr('Refract Tech · Step 01 / 06', '<span dir="ltr">Refract Tech</span> · الخطوة 01 / 06')}`);
+  const q1 = LB ? null : Lines(hud, tr(['Have a business idea', '*but no clear plan?*'], ['لديك فكرة مشروع', '*لكن بلا خطة واضحة؟*']), { y: 760 });
+  const fam = LB ? null : Lines(hud, tr(['Sound *familiar?*'], ['هل يبدو هذا *مألوفاً؟*']), { y: 300, size: 84 });
   const plan = h('div', 'plan', hud, `<div class="plan-h"><span>${tr('Your discovery plan', 'خطة الاكتشاف')}</span><em>${tr('Step 01', 'الخطوة 01')}</em></div>`);
-  const planLine = Lines(hud, tr(['We turn the chaos into', '*a clear, scoped plan.*'], ['نحوّل الفوضى إلى', '*خطة واضحة ومحددة.*']), { y: 300, size: 78 });
+  const planLine = Lines(hud, tr(['We turn the chaos into', '*a clear, scoped plan.*'], ['نحوّل الفوضى إلى', '*خطة واضحة ومحددة.*'], ['نحنا منحوّل الفوضى', '*لخطة واضحة ومرتّبة.*']), { y: 300, size: 78 });
   const notes = CHAOS.map(([q, a, x, y, r], i) => Note(hud, q, a, x, y, r, i));
   const SNAP = CHAOS.map((_, i) => 7.7 + i * .25), CHAOS_IN = CHAOS.map((_, i) => 4.75 + i * .16);
   const label = h('div', 'ep-label', hud, tr('Step 01 · Discover', 'الخطوة 01 · الاكتشاف'));
-  const msg = Lines(hud, tr(['Goals, users and', '*a prioritised roadmap.*'], ['الأهداف والمستخدمون', '*وخطة بالأولويات.*']), AR ? { y: 285, size: 72 } : { y: 330, size: 80 });
+  const msg = Lines(hud, tr(['Goals, users and', '*a prioritised roadmap.*'], ['الأهداف والمستخدمون', '*وخطة بالأولويات.*'], ['منفهم أهدافك وزبايِنك', '*ومنرتّبلك الأولويات.*']), AR ? { y: 285, size: 72 } : { y: 330, size: 80 });
   const card = StageCard(hud, cards[0], acc);
-  const lens = Lens(hud, tr(['Clarity first.', '*Then we build.*'], ['الوضوح أولاً.', '*ثم نبني.*']), 780);
+  const lens = Lens(hud, tr(['Clarity first.', '*Then we build.*'], ['الوضوح أولاً.', '*ثم نبني.*'], ['الوضوح أوّل.', '*بعدين منعمّر.*']), 780);
   const scan = h('div', 'scan', hud);
-  const end = NextUp(hud, tr(['Got an idea?', "*Let's plan it together.*"], ['لديك فكرة؟', '*لنخطط لها معاً.*']), 2, tr('Design', 'التصميم'));
+  const end = NextUp(hud, tr(['Got an idea?', "*Let's plan it together.*"], ['لديك فكرة؟', '*لنخطط لها معاً.*'], ['عندك فكرة؟', '*خلّينا نخطّطلها سوا.*']), 2, tr('Design', 'التصميم'));
   const CARD = 10.05;
   return {
     DUR, focus: t => intro.focus(t),
-    events: { verse: 0, lock: [.02], whoosh0: [2.62], swirl: [4.7], riser: [[6.3, 7.2]], drop: [7.2], snaps: SNAP, whoosh: [CARD], zoom: [11.25], shimmer: [13.75], end: [16.0] },
+    events: LB ? { verse: 0, lock: [.02], whoosh: [2.45, CARD], swirl: [4.7], riser: [[6.3, 7.2]], drop: [7.2], snaps: SNAP, zoom: [11.25], shimmer: [13.75], end: [16.0] } : { verse: 0, lock: [.02], whoosh0: [2.62], swirl: [4.7], riser: [[6.3, 7.2]], drop: [7.2], snaps: SNAP, whoosh: [CARD], zoom: [11.25], shimmer: [13.75], end: [16.0] },
     update(t) {
       intro.update(t);
-      num.update(t, 2.6, 7.2);
-      look(tag, prog(t, 2.6, 2.9) * (1 - prog(t, 4.55, 4.75)), `translateY(${((1 - ease.outCubic(prog(t, 2.6, 3.0))) * -24).toFixed(1)}px)`);
-      q1.update(t, 2.65, 4.6);
-      fam.update(t, 4.85, 7.15);
+      num?.update(t, 2.6, 7.2);
+      if (tag) look(tag, prog(t, 2.6, 2.9) * (1 - prog(t, 4.55, 4.75)), `translateY(${((1 - ease.outCubic(prog(t, 2.6, 3.0))) * -24).toFixed(1)}px)`);
+      q1?.update(t, 2.65, 4.6);
+      fam?.update(t, 4.85, 7.15);
       // the plan board: its frame draws in on the drop, the notes fly into its rows
       const pk = spring(t, 7.25, 1.4, .75), po = ease.inCubic(prog(t, 9.75, 10.1));
       look(plan, clamp(pk * 2) * (1 - po), `translateY(${((1 - pk) * 80 - po * 60).toFixed(1)}px) scale(${(.94 + .06 * clamp(pk)).toFixed(3)})`);
