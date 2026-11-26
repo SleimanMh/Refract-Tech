@@ -1,6 +1,10 @@
 import { CSSProperties, FormEvent, useEffect, useRef, useState } from 'react';
 import { CAPABILITIES, STAGES } from '../data/process';
 import rMark from '../assets/brand/r-mark.png';
+import tplBook from '../assets/work/tpl-book.webp';
+import tplPhone from '../assets/work/tpl-phone.webp';
+import challengePhone from '../assets/work/challenge-phone.webp';
+import challengeAdmin from '../assets/work/challenge-admin.webp';
 import { Marquee, Split, useSectionMotion } from '../motion/fx';
 import { palette } from '../theme';
 import { story } from '../story/controller';
@@ -61,6 +65,7 @@ export function Header() {
     <header className={`site-header${solid ? ' is-solid' : ''}`} id="siteHeader">
       <a className="brand" href="#top" aria-label="Refract Tech, back to top"><Logo /></a>
       <nav className="site-nav" aria-label="Main">
+        <a href="#services">Services</a>
         <a href="#work">Work</a>
         <a href="#process" onClick={e => { e.preventDefault(); story.goTo(0); }}>Process</a>
         <a href="#expertise">Expertise</a>
@@ -80,7 +85,7 @@ const Aurora = ({ tone = 'a' }: { tone?: 'a' | 'b' | 'c' }) => (
 export function Band() {
   return (
     <div className="band">
-      <Marquee items={['Strategy', 'Product design', 'Web platforms', 'Mobile apps', 'Integrations', 'AI where useful', 'Cloud', 'Ongoing care']} />
+      <Marquee items={['Strategy', 'Product design', 'Booking systems', 'Management systems', 'Web platforms', 'Mobile apps', 'Integrations', 'AI where useful', 'Cloud', 'Ongoing care']} />
       <Marquee reverse items={['Discover', 'Design', 'Build', 'Connect', 'Launch', 'Evolve']} />
     </div>
   );
@@ -88,17 +93,32 @@ export function Band() {
 
 // ---------------------------------------------------------------- what we build
 const WORK = [
+  { kind: 't4', tag: 'Booking', title: 'Booking systems', need: 'Booking system', cta: 'Plan a booking system' },
+  { kind: 't5', tag: 'Management', title: 'Management systems', need: 'Management system', cta: 'Plan a management system' },
   { kind: 't1', tag: 'Web', title: 'Web platforms', need: 'Web platform', cta: 'Plan a web platform' },
   { kind: 't2', tag: 'Mobile', title: 'Mobile apps', need: 'Mobile app', cta: 'Plan a mobile app' },
   { kind: 't3', tag: 'Automation and AI', title: 'Automation and AI', need: 'Workflow automation and AI', cta: 'Plan an automation' },
 ];
 /** Ask the contact form to note what the visitor is interested in, then take them to it. */
 const requestNeed = (need: string) => window.dispatchEvent(new CustomEvent('refract:need', { detail: need }));
-/** Small living illustrations: a page assembling itself, a feed scrolling, data flowing between systems. */
+/** Small living illustrations: slots being booked in a calendar, a dashboard's bars rising, a page assembling
+ *  itself, a feed scrolling, data flowing between systems. */
 const Thumb = ({ kind }: { kind: string }) => (
   <div className={`work-thumb ${kind}`} aria-hidden="true">
     <span className="thumb-sweep" />
     <svg viewBox="0 0 200 150">
+      {kind === 't4' && <>
+        <rect x="34" y="26" width="132" height="100" rx="6" />
+        <path d="M34 44h132" opacity=".5" /><path d="M58 20v12M142 20v12" />
+        {[0, 1, 2].map(r => [0, 1, 2, 3].map(c => <rect key={`${r}${c}`} className={`slot s${r * 4 + c}`} x={44 + c * 29} y={54 + r * 23} width="23" height="16" rx="3" />))}
+        <path className="t4-check" d="M106 85l5 5 9-10" />
+      </>}
+      {kind === 't5' && <>
+        <rect x="26" y="24" width="148" height="102" rx="6" />
+        <path d="M58 24v102" opacity=".5" /><circle cx="42" cy="42" r="3" /><circle cx="42" cy="58" r="3" opacity=".55" /><circle cx="42" cy="74" r="3" opacity=".55" />
+        <path d="M70 40h34M116 40h46" opacity=".55" /><path d="M70 114h92" opacity=".5" />
+        {[0, 1, 2, 3, 4].map(i => <rect key={i} className={`bar b${i + 1}`} x={74 + i * 18} y="56" width="10" height="56" rx="2" />)}
+      </>}
       {kind === 't1' && <>
         <rect x="30" y="24" width="140" height="102" rx="6" />
         <path d="M30 40h140" opacity=".5" /><circle cx="40" cy="32" r="2" /><circle cx="48" cy="32" r="2" /><circle cx="56" cy="32" r="2" />
@@ -126,12 +146,12 @@ export function Work() {
   const ref = useRef<HTMLElement>(null);
   useSectionMotion(ref);
   return (
-    <section className="section work" id="work" aria-labelledby="work-title" ref={ref}>
+    <section className="section work" id="services" aria-labelledby="work-title" ref={ref}>
       <Aurora tone="a" />
       <header className="section-head">
         <p className="eyebrow" data-reveal>What we build</p>
         <Split id="work-title" text="Products we bring to life." />
-        <p className="section-lede" data-reveal>Three kinds of product we design, build and look after. Each one goes through the same six steps, from the first conversation to every release after launch.</p>
+        <p className="section-lede" data-reveal>From the booking system your customers use to the management system your team runs on, we design, build and look after it. Each one goes through the same six steps, from the first conversation to every release after launch.</p>
       </header>
       <ul className="work-grid">
         {WORK.map((w, i) => (
@@ -145,6 +165,60 @@ export function Work() {
           </li>
         ))}
       </ul>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------- our work
+const CASES = [
+  {
+    id: 'tpl', client: 'The Padel Lounge', where: 'Padel club · Rachaya', url: 'https://tplrachaya.com/', host: 'tplrachaya.com',
+    body: 'A website and booking system for a padel club. Players pick a length, a day and a time and book the court online, earn free court time as they play, and the team manages every booking from its own admin dashboard.',
+    tags: ['Booking system', 'Admin dashboard', 'Website'],
+  },
+  {
+    id: 'challenge', client: 'Eagle Strength · 60 Days Challenge', where: 'Calisthenics coaching', url: 'https://eagle-strength-60.web.app/', host: 'eagle-strength-60.web.app',
+    body: "A training app for a 60-day calisthenics challenge. Athletes follow a beginner or an advanced plan, check in on each day's mission and climb the squad board, while the coach assigns levels and follows everyone from an admin view.",
+    tags: ['Management system', 'Progress tracking', 'Web app'],
+  },
+];
+/** The screens of each product: the booking page in a browser with the home page on a phone, or two phone screens. */
+const CaseVisual = ({ id }: { id: string }) => id === 'tpl' ? (
+  <div className="case-visual case-tpl" aria-hidden="true">
+    <figure className="case-browser"><span className="case-bar"><i /><i /><i /><b>tplrachaya.com/book</b></span><img src={tplBook} alt="" loading="lazy" /></figure>
+    <figure className="case-phone case-phone-front"><img src={tplPhone} alt="" loading="lazy" /></figure>
+  </div>
+) : (
+  <div className="case-visual case-challenge" aria-hidden="true">
+    <figure className="case-phone case-phone-back"><img src={challengeAdmin} alt="" loading="lazy" /></figure>
+    <figure className="case-phone case-phone-front"><img src={challengePhone} alt="" loading="lazy" /></figure>
+  </div>
+);
+export function Cases() {
+  const ref = useRef<HTMLElement>(null);
+  useSectionMotion(ref);
+  return (
+    <section className="section cases" id="work" aria-labelledby="cases-title" ref={ref}>
+      <Aurora tone="c" />
+      <header className="section-head">
+        <p className="eyebrow" data-reveal>Our work</p>
+        <Split id="cases-title" text="Built by Refract, live today." />
+        <p className="section-lede" data-reveal>A booking system and a management app we designed, built and launched, both in use every day.</p>
+      </header>
+      <div className="case-list">
+        {CASES.map((c, i) => (
+          <article className={`case${i % 2 ? ' is-flipped' : ''}`} key={c.id} data-reveal>
+            <CaseVisual id={c.id} />
+            <div className="case-copy">
+              <p className="case-meta"><span>{String(i + 1).padStart(2, '0')}</span>{c.where}</p>
+              <h3>{c.client}</h3>
+              <p className="case-body">{c.body}</p>
+              <ul className="case-tags">{c.tags.map(t => <li key={t}>{t}</li>)}</ul>
+              <a className="case-link" href={c.url} target="_blank" rel="noreferrer noopener">Visit {c.host} <Arrow /></a>
+            </div>
+          </article>
+        ))}
+      </div>
     </section>
   );
 }
@@ -300,6 +374,7 @@ export function Footer() {
         <nav className="footer-col" aria-label="Footer" data-reveal>
           <h3>Explore</h3>
           <ul>
+            <li><a href="#services">Services</a></li>
             <li><a href="#work">Work</a></li>
             <li><a href="#process" onClick={e => { e.preventDefault(); story.goTo(0); }}>Process</a></li>
             <li><a href="#expertise">Expertise</a></li>
