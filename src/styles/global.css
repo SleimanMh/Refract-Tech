@@ -521,12 +521,18 @@ html[data-layout="stack"] .anchor { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .wa.is-on .wa-ring { animation: none; } }
 
-/* ---------------------------------------------------------------- what we build: five kinds, the two systems first and wider */
-.work-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-.work-item { grid-column: span 2; }
-.work-item:nth-child(-n+2) { grid-column: span 3; }
+/* ---------------------------------------------------------------- what we build: five equal, compact cards
+   One row of five on wide screens; on narrower ones the rows wrap and the last row stays centred. */
+.work-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(14px, 1.4vw, 20px); --cols: 5; }
+.work-item { flex: 0 0 calc((100% - (var(--cols) - 1) * clamp(14px, 1.4vw, 20px)) / var(--cols)); min-width: 0; }
+.work-card { padding: 8px 8px 16px; }
+.work-card .work-thumb { margin-bottom: 14px; }
+.work-item h3 { font-size: clamp(17px, 1.25vw, 19px); }
+.work-more { margin-top: 10px; }
 .work-item:nth-child(4) .thumb-sweep { animation-delay: 1s; } .work-item:nth-child(5) .thumb-sweep { animation-delay: 3s; }
-@media (max-width: 899px) { .work-grid { grid-template-columns: minmax(0, 1fr); } .work-item, .work-item:nth-child(-n+2) { grid-column: auto; } }
+@media (max-width: 1199px) { .work-grid { --cols: 3; } }
+@media (max-width: 899px) { .work-grid { --cols: 2; } }
+@media (max-width: 520px) { .work-grid { --cols: 1; } }
 /* t4: slots in a calendar are booked one after another, and one is confirmed */
 .t4 .slot { fill: transparent; animation: slot 6s ease-in-out infinite; }
 .t4 .s1 { animation-delay: .4s; } .t4 .s6 { animation-delay: .9s; } .t4 .s4 { animation-delay: 1.4s; } .t4 .s11 { animation-delay: 1.9s; } .t4 .s8 { animation-delay: 2.4s; } .t4 .s2 { animation-delay: 2.9s; }
